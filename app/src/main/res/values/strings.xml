@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DownloadMaster</string>
+    <string name="nav_home">首页</string>
+    <string name="nav_download">下载</string>
+    <string name="nav_browser">浏览器</string>
+    <string name="nav_settings">设置</string>
+    <string name="hint_download_url">粘贴链接（HTTP 直链 / 磁力 / 迅雷 / 网盘）</string>
+    <string name="btn_smart_download">智能解析下载</string>
+    <string name="btn_direct_download">直链极速下载 (32 线程)</string>
+    <string name="title_home">极速下载器</string>
+    <string name="subtitle_home">直链 · 磁力 · 迅雷 · 网盘 · 网页嗅探</string>
+    <string name="settings_background">启用图片背景</string>
+</resources>
