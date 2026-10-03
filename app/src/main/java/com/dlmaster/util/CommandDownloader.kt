@@ -1,70 +1,56 @@
 package com.dlmaster.util
-
 import android.content.Context
-import com.dlmaster.download.Aria2Engine
-import com.dlmaster.download.DirectProbe
 import com.dlmaster.download.DownloadRepository
 import com.dlmaster.download.DownloadTask
+import com.dlmaster.download.MultiThreadDownloader
 import com.dlmaster.netdisk.NetdiskResolver
 import com.dlmaster.sniffer.ThunderParser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-
+import java.io.File
 object CommandDownloader {
-
-    fun smartDownload(input: String, context: Context) {
-        when {
-            ThunderParser.isThunder(input) -> {
-                ThunderParser.parse(input)?.let { enqueue(context, it, false) }
-            }
-            input.startsWith("magnet:") -> enqueue(context, input, false, 32)
-            NetdiskResolver.isNetdiskLink(input) -> enqueue(context, input, false)
-            input.startsWith("http", ignoreCase = true) -> {
-                if (!looksLikePage(input)) enqueue(context, input, true)
-            }
-        }
-    }
-
-    fun directDownload(url: String, context: Context) {
-        enqueue(context, url, true)
-    }
-
-    private fun enqueue(
-        context: Context,
-        url: String,
-        direct: Boolean,
-        connections: Int = 16
-    ) {
-        val task = DownloadTask(url = url, isDirect = direct)
-        DownloadRepository.addTask(task)
-
-        CoroutineScope(Dispatchers.IO).launch {
-            if (direct) {
-                DirectProbe.probe(url)?.let { info ->
-                    task.fileName = info.fileName
-                    task.totalBytes = info.size
+    fun smartDownload(input: String, ctx: Context) {
+        try {
+            val url = when {
+                ThunderParser.isThunder(input) -> ThunderParser.parse(input) ?: return
+                input.startsWith("magnet:") -> input
+                NetdiskResolver.isNetdiskLink(input) -> input
+                input.startsWith("http", true) -> {
+                    if (looksLikePage(input)) return else input
                 }
+                else -> return
             }
-            Aria2Engine.startDownload(
-                context = context,
-                url = url,
-                savePath = context.getExternalFilesDir(null)?.absolutePath
-                    ?: context.filesDir.absolutePath,
-                direct = direct,
-                connections = connections
-            ) { downloaded, total ->
-                task.downloadedBytes = downloaded
-                if (total > 0) task.totalBytes = total
+            start(ctx, url, 8)
+        } catch (_: Throwable) {}
+    }
+    fun directDownload(url: String, ctx: Context) {
+        try { start(ctx, url, 16) } catch (_: Throwable) {}
+    }
+    private fun start(ctx: Context, url: String, threads: Int) {
+        val task = DownloadTask(url = url)
+        task.status = DownloadTask.Status.RUNNING
+        DownloadRepository.addTask(task)
+        val dir = File(ctx.getExternalFilesDir(null) ?: ctx.filesDir, "downloads")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val f = MultiThreadDownloader.download(url, dir, threads) { d, t ->
+                    task.downloadedBytes = d
+                    if (t > 0) task.totalBytes = t
+                }
+                if (f != null) {
+                    task.fileName = f.name
+                    task.status = DownloadTask.Status.DONE
+                } else task.status = DownloadTask.Status.FAILED
+            } catch (_: Throwable) {
+                task.status = DownloadTask.Status.FAILED
             }
         }
     }
-
     private fun looksLikePage(url: String): Boolean {
-        val path = url.substringAfter("://").substringAfter('/', "")
-        return path.isEmpty() ||
-                path.endsWith(".html") || path.endsWith(".php") ||
-                path.endsWith(".asp") || path.endsWith(".jsp") ||
-                !path.substringAfterLast('/').contains(".")
+        val p = url.substringAfter("://").substringAfter('/', "")
+        return p.isEmpty() || p.endsWith(".html") || p.endsWith(".php") ||
+                p.endsWith(".asp") || p.endsWith(".jsp") ||
+                !p.substringAfterLast('/').contains(".")
     }
 }

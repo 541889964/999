@@ -1,36 +1,21 @@
 package com.dlmaster.sniffer
-
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import com.dlmaster.download.DownloadRepository
-
 class WebSniffer(private val webView: WebView) {
-
-    private val mediaExtensions = setOf(
-        ".mp4", ".mkv", ".webm", ".avi", ".mov", ".flv",
-        ".mp3", ".flac", ".m4a", ".wav", ".aac",
-        ".zip", ".rar", ".7z", ".apk", ".exe", ".iso",
-        ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt",
-        ".m3u8", ".mpd", ".ts"
-    )
-
+    private val exts = setOf(".mp4",".mkv",".webm",".avi",".mov",".flv",".mp3",".flac",".m4a",".wav",".zip",".rar",".7z",".apk",".exe",".pdf",".m3u8",".mpd",".ts")
     fun interceptRequests() {
-        webView.webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(
-                view: WebView?, request: WebResourceRequest?
-            ): WebResourceResponse? {
-                val url = request?.url?.toString() ?: return null
-                if (isDownloadLink(url)) DownloadRepository.addSniffedLink(url)
-                return null
+        try {
+            webView.webViewClient = object : WebViewClient() {
+                override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
+                    return null
+                }
             }
-        }
+        } catch (_: Throwable) {}
     }
-
     fun isDownloadLink(url: String): Boolean {
-        val lower = url.lowercase()
-        return mediaExtensions.any { lower.contains(it) } ||
-                lower.contains("download") || lower.contains("file=")
+        val l = url.lowercase()
+        return exts.any { l.contains(it) } || l.contains("download")
     }
 }

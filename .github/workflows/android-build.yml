@@ -1,4 +1,4 @@
-name: Build DownloadMaster APK
+name: Build APK
 
 on:
   push:
@@ -9,7 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-
     steps:
       - uses: actions/checkout@v4
 
@@ -19,20 +18,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: "8.7"
 
       - name: Build Debug APK
-        id: build_debug
-        continue-on-error: true
         run: gradle assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
-        if: steps.build_debug.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: DownloadMaster-debug
           path: app/build/outputs/apk/debug/*.apk
-          retention-days: 7
+          retention-days: 30
