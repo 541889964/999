@@ -13,7 +13,6 @@
     <string name="settings_bg">图片背景轮播</string>
     <string name="settings_bg_freq">轮播间隔</string>
     <string name="settings_music">背景音乐</string>
-    <string name="settings_translucent">半透明玻璃卡片</string>
     <string name="settings_clipboard">监听剪贴板链接</string>
     <string name="music_idle">暂无音乐</string>
 </resources>

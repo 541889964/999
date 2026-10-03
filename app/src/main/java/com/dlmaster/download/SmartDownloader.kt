@@ -42,9 +42,7 @@ object SmartDownloader {
             }
         } catch (_: Throwable) { null }
     }
-
     private fun sanitize(n: String): String = n.replace(Regex("""[\\/:*?"<>|]"""), "_").ifBlank { "download.bin" }
-
     private suspend fun multiThread(url: String, out: File, threads: Int, referer: String?, onProgress: (Long, Long, Long) -> Unit): File? = withContext(Dispatchers.IO) {
         try {
             val head = client.newCall(Request.Builder().url(url).head()
@@ -74,7 +72,7 @@ object SmartDownloader {
                         rangeWithRetry(url, out, start, end, referer, 5) { n ->
                             val d = done.addAndGet(n)
                             val now = System.currentTimeMillis()
-                            if (now - lastReport.get() > 300L || d >= total) {
+                            if (now - lastReport.get() > 250L || d >= total) {
                                 lastReport.set(now)
                                 val el = max(1L, now - startTime) / 1000L
                                 onProgress(d, total, d / el)
@@ -88,7 +86,6 @@ object SmartDownloader {
             out
         } catch (_: Throwable) { null }
     }
-
     private fun streamSingle(url: String, out: File, referer: String?, onProgress: (Long, Long, Long) -> Unit): File? = try {
         val req = Request.Builder().url(url).header("User-Agent", UA)
             .apply { referer?.let { header("Referer", it) } }.build()
@@ -103,7 +100,7 @@ object SmartDownloader {
                     while (input.read(buf).also { n = it } > 0) {
                         output.write(buf, 0, n); read += n
                         val now = System.currentTimeMillis()
-                        if (now - last > 300L) {
+                        if (now - last > 250L) {
                             last = now
                             val el = max(1L, now - startTime) / 1000L
                             onProgress(read, total, read / el)
@@ -115,7 +112,6 @@ object SmartDownloader {
         }
         out
     } catch (_: Throwable) { null }
-
     private fun rangeWithRetry(url: String, out: File, start: Long, end: Long, referer: String?, attempts: Int, onBytes: (Long) -> Unit) {
         var tryCount = 0; var cursor = start
         while (tryCount < attempts && cursor <= end) {
@@ -141,7 +137,7 @@ object SmartDownloader {
                 return
             } catch (_: Throwable) {
                 if (tryCount >= attempts) return
-                Thread.sleep(400L * tryCount)
+                Thread.sleep(300L * tryCount)
             }
         }
     }

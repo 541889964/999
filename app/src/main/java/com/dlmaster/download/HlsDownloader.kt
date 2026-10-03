@@ -6,7 +6,7 @@ import okhttp3.Request
 import java.io.File
 import java.util.concurrent.TimeUnit
 object HlsDownloader {
-    private val client by lazy { OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(60, TimeUnit.SECONDS).build() }
+    private val client by lazy { OkHttpClient.Builder().connectTimeout(15, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS).build() }
     suspend fun download(url: String, dir: File, onProgress: (Long, Long, Long) -> Unit): File? = withContext(Dispatchers.IO) {
         try {
             if (!dir.exists()) dir.mkdirs()

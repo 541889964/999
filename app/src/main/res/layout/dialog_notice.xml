@@ -6,17 +6,28 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="22dp"
         android:background="@drawable/dialog_panel">
-
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="说点心里话" android:textColor="@color/txt_primary"
-            android:textSize="18sp" android:textStyle="bold" />
-
-        <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:textColor="@color/txt_primary" android:textSize="13sp"
-            android:lineSpacingExtra="6dp"
-            android:text="下载工具从第一行代码到现在，没想过做得多花哨。\n\n我们相信一件事：链接到你手里，剩下的应该交给工具，不该让你研究哪个协议快、哪个线程多、哪个镜像稳。所以每次粘贴，它都会先摸一摸对方的脾气——支不支持分段、响不响应、文件多大，然后替你挑一条目前能走通的最快路。\n\n它不承诺突破物理带宽，不承诺破会员墙，也不承诺包打天下。它只是把能做的都做了：16 线程、断点续传、HLS 合并、镜像回退、伪装请求，一共十条路。哪条快走哪条，走不通换一条。\n\n不收费，不推送，不收集。UI 做成半透明是因为想让你看见自己选的那张图，而不是被界面盖住。切歌、切背景、切任务，都是想让你少点一下。\n\n如果它帮到了你，就用着。如果哪里不顺手，长按或截图告诉我们。它存在的全部理由，就是把下载这件事变简单。\n\n—— 下载工具" />
-
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="horizontal" android:gravity="center_vertical">
+            <FrameLayout android:layout_width="44dp" android:layout_height="44dp">
+                <View android:layout_width="44dp" android:layout_height="44dp"
+                    android:background="@drawable/halo_ring" />
+                <View android:layout_width="28dp" android:layout_height="28dp"
+                    android:layout_gravity="center" android:background="@drawable/halo_core" />
+            </FrameLayout>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginStart="12dp"
+                android:text="说点心里话" android:textColor="@color/txt_primary"
+                android:textSize="17sp" android:textStyle="bold" />
+        </LinearLayout>
+        <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:layout_marginTop="16dp"
+            android:maxHeight="380dp" android:overScrollMode="never"
+            android:scrollbars="none">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:textColor="@color/txt_primary" android:textSize="13sp"
+                android:lineSpacingExtra="5dp"
+                android:text="下载工具从第一行代码到现在，没想过做得多花哨。我们相信一件事：链接到你手里，剩下的应该交给工具，不该让你研究哪个协议快、哪个线程多、哪个镜像稳。所以每次粘贴，它都会先摸一摸对方的脾气，支不支持分段、响不响应、文件多大，然后替你挑一条目前能走通的最快路。它不承诺突破物理带宽，不承诺破会员墙。它只是把能做的都做了：16 线程、断点续传、HLS 合并、镜像回退、伪装请求，一共十条路。哪条快走哪条，走不通换一条。不收费，不推送，不收集。界面做成半透明，是想让你看见自己选的那张图，而不是被界面盖住。切歌、切背景、切任务，都是想让你少点一下。如果它帮到了你，就用着。如果哪里不顺手，截图告诉我们。它存在的全部理由，就是把下载这件事变简单。" />
+        </ScrollView>
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_notice_ok"
             android:layout_width="match_parent" android:layout_height="48dp"
             android:layout_marginTop="18dp"

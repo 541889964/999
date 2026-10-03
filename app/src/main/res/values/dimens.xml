@@ -4,5 +4,7 @@
     <dimen name="m">16dp</dimen>
     <dimen name="l">24dp</dimen>
     <dimen name="radius">22dp</dimen>
+    <dimen name="radius_sm">14dp</dimen>
     <dimen name="bh">54dp</dimen>
+    <dimen name="top_pad">44dp</dimen>
 </resources>

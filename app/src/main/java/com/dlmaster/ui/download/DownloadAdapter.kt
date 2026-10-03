@@ -28,7 +28,7 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
         val strategy: TextView = itemView.findViewById(R.id.tv_strategy)
         val action: TextView = itemView.findViewById(R.id.tv_action)
     }
-    fun setFiltered(list: List<DownloadTask>) { filtered = list; notifyDataSetChanged() }
+    fun setFiltered(list: List<DownloadTask>?) { filtered = list; notifyDataSetChanged() }
     private fun list(): List<DownloadTask> = filtered ?: items
     override fun onCreateViewHolder(p: ViewGroup, t: Int) = VH(p)
     override fun getItemCount() = list().size
@@ -56,6 +56,7 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
                 "复制链接" -> try {
                     val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                     cm.setPrimaryClip(ClipData.newPlainText("url", t.url))
+                    Toast.makeText(ctx, "已复制", Toast.LENGTH_SHORT).show()
                 } catch (_: Throwable) {}
                 "安装" -> tryInstall(ctx, t)
                 "删除" -> { items.remove(t); filtered = null; notifyDataSetChanged() }
@@ -68,11 +69,8 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
             FileProvider.getUriForFile(ctx, ctx.packageName + ".fileprovider", f) else Uri.fromFile(f)
         val i = Intent(Intent.ACTION_VIEW).apply {
             setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         ctx.startActivity(i)
-    } catch (e: Throwable) {
-        Toast.makeText(ctx, "打不开安装: ${e.message}", Toast.LENGTH_SHORT).show()
-    }
+    } catch (e: Throwable) { Toast.makeText(ctx, "打不开安装: ${e.message}", Toast.LENGTH_SHORT).show() }
 }

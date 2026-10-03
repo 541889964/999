@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 object CommandDownloader {
-    /** 一键：先分析，用最快方案开跑 */
     fun oneClick(ctx: Context, url: String, scope: CoroutineScope, onResult: (AnalyzeResult?) -> Unit) {
         scope.launch {
             val r = try { SmartAnalyzer.analyze(url) } catch (_: Throwable) { null }
@@ -27,6 +26,12 @@ object CommandDownloader {
         )
         DownloadRepository.addTask(t)
         run(ctx, t, s)
+    }
+    fun sniffDownload(ctx: Context, url: String) {
+        val name = url.substringAfterLast('/').substringBefore('?').ifBlank { "download.bin" }
+        val t = DownloadTask(url = url, fileName = name, strategy = DownloadStrategy.T32)
+        DownloadRepository.addTask(t)
+        run(ctx, t, DownloadStrategy.T32)
     }
     fun directDownload(url: String, ctx: Context) {
         val t = DownloadTask(url = url, strategy = DownloadStrategy.T32)

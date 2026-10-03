@@ -6,7 +6,6 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="22dp"
         android:background="@drawable/dialog_panel">
-
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical">
             <FrameLayout android:layout_width="52dp" android:layout_height="52dp">
@@ -26,28 +25,21 @@
                     android:textColor="@color/txt_secondary" android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
-
         <View android:layout_width="match_parent" android:layout_height="1dp"
             android:layout_marginVertical="14dp" android:background="#1AFFFFFF" />
-
         <TextView android:id="@+id/tv_dlg_type" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:textColor="@color/txt_primary" android:textSize="13sp" />
-
         <TextView android:id="@+id/tv_dlg_size" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="6dp" android:textColor="@color/txt_secondary" android:textSize="12sp" />
-
         <TextView android:id="@+id/tv_dlg_best" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="14dp" android:textColor="#FF52C7FF"
             android:textSize="14sp" android:textStyle="bold" />
-
         <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="14dp" android:text="换条路试试"
             android:textColor="@color/txt_secondary" android:textSize="12sp" />
-
         <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_strategy"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="8dp" />
-
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="18dp" android:orientation="horizontal">
             <com.google.android.material.button.MaterialButton android:id="@+id/btn_cancel"

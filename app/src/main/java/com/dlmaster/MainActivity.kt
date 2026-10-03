@@ -5,8 +5,8 @@ import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -45,8 +45,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         bgIds = BackgroundList.RES_IDS
-        bg1 = findViewById(R.id.iv_bg1)
-        bg2 = findViewById(R.id.iv_bg2)
+        bg1 = findViewById(R.id.iv_bg1); bg2 = findViewById(R.id.iv_bg2)
         PermissionHelper.requestNotifications(this)
         if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
         val nav = findViewById<BottomNavigationView>(R.id.bottom_nav)
@@ -59,16 +58,14 @@ class MainActivity : AppCompatActivity() {
             }
             try {
                 supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                    .setCustomAnimations(R.anim.frag_in, R.anim.frag_out, R.anim.frag_in, R.anim.frag_out)
                     .replace(R.id.fragment_container, f)
                     .commitAllowingStateLoss()
             } catch (_: Throwable) {}
             true
         }
         if (savedInstanceState == null) nav.selectedItemId = R.id.nav_home
-        if (!Prefs.noticeShown(this)) {
-            bgHandler.postDelayed({ showNotice() }, 1400)
-        }
+        if (!Prefs.noticeShown(this)) bgHandler.postDelayed({ showNotice() }, 1000)
     }
 
     override fun onResume() {
@@ -77,9 +74,7 @@ class MainActivity : AppCompatActivity() {
             bgHandler.removeCallbacks(bgSwitchRunnable)
             switchNextBg()
             bgHandler.postDelayed(bgSwitchRunnable, Prefs.bgIntervalMs(this))
-        } else {
-            bg1.setImageDrawable(null); bg2.setImageDrawable(null)
-        }
+        } else { bg1.setImageDrawable(null); bg2.setImageDrawable(null) }
         if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) MusicPlayer.start(applicationContext)
     }
 
@@ -88,10 +83,12 @@ class MainActivity : AppCompatActivity() {
         bgHandler.removeCallbacks(bgSwitchRunnable)
     }
 
-    /** 双 ImageView 交叉淡入，彻底消除黑屏 */
+    /**
+     * 双 ImageView 交叉淡入
+     * 关键修复:withLayer() 加在 target 和 current 两边
+     */
     private fun switchNextBg() {
-        if (bgIds.isEmpty()) return
-        if (!Prefs.bgEnabled(this)) return
+        if (bgIds.isEmpty() || !Prefs.bgEnabled(this)) return
         val next: Int = if (bgIds.size == 1) 0 else {
             var n: Int
             do { n = Random.nextInt(bgIds.size) } while (n == currentBgIndex)
@@ -101,20 +98,23 @@ class MainActivity : AppCompatActivity() {
         val target = if (useFirst) bg1 else bg2
         val current = if (useFirst) bg2 else bg1
         try {
+            val fastOut = AnimationUtils.loadInterpolator(this, android.R.interpolator.fast_out_slow_in)
+            val linearOut = AnimationUtils.loadInterpolator(this, android.R.interpolator.linear_out_slow_in)
             if (firstLoad) {
                 Glide.with(applicationContext).load(bgIds[next])
                     .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
                     .diskCacheStrategy(DiskCacheStrategy.NONE).into(target)
-                target.alpha = 1f
-                current.alpha = 0f
+                target.alpha = 1f; current.alpha = 0f
                 firstLoad = false
             } else {
                 target.alpha = 0f
                 Glide.with(applicationContext).load(bgIds[next])
                     .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
                     .diskCacheStrategy(DiskCacheStrategy.NONE).into(target)
-                target.animate().alpha(1f).setDuration(900).start()
-                current.animate().alpha(0f).setDuration(900).start()
+                target.animate().withLayer().alpha(1f).setDuration(700)
+                    .setInterpolator(fastOut).start()
+                current.animate().withLayer().alpha(0f).setDuration(700)
+                    .setInterpolator(linearOut).start()
             }
             useFirst = !useFirst
         } catch (_: Throwable) {}
@@ -131,16 +131,16 @@ class MainActivity : AppCompatActivity() {
         try {
             val dlg = AlertDialog.Builder(this).create()
             val v = LayoutInflater.from(this).inflate(R.layout.dialog_notice, null)
-            dlg.setView(v)
-            dlg.setCancelable(false)
+            dlg.setView(v); dlg.setCancelable(false)
             v.findViewById<View>(R.id.btn_notice_ok).setOnClickListener {
-                Prefs.setNoticeShown(this, true)
-                dlg.dismiss()
+                Prefs.setNoticeShown(this, true); dlg.dismiss()
             }
             dlg.show()
             try {
                 dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
                 dlg.window?.setWindowAnimations(R.style.DialogAnim)
+                val dm = resources.displayMetrics
+                dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), -2)
             } catch (_: Throwable) {}
         } catch (_: Throwable) {}
     }

@@ -14,16 +14,20 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
         PermissionHelper.requestBase(this)
         try {
-            findViewById<ImageView>(R.id.iv_logo).startAnimation(AnimationUtils.loadAnimation(this, R.anim.logo_enter))
-            findViewById<TextView>(R.id.tv_brand).startAnimation(AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
-            findViewById<TextView>(R.id.tv_slogan).startAnimation(AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
+            findViewById<ImageView>(R.id.iv_logo).startAnimation(
+                AnimationUtils.loadAnimation(this, R.anim.logo_enter))
+            findViewById<TextView>(R.id.tv_brand).startAnimation(
+                AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
+            findViewById<TextView>(R.id.tv_slogan).startAnimation(
+                AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
         } catch (_: Throwable) {}
         Handler(Looper.getMainLooper()).postDelayed({
             try {
                 startActivity(Intent(this, MainActivity::class.java))
+                @Suppress("DEPRECATION")
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             } catch (_: Throwable) {}
             finish()
-        }, 1200)
+        }, 600)
     }
 }

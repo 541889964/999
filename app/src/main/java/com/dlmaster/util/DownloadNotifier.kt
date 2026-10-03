@@ -29,13 +29,13 @@ object DownloadNotifier {
             .setPriority(NotificationCompat.PRIORITY_LOW)
     fun update(ctx: Context, task: DownloadTask) = try {
         val b = base(ctx, task).setProgress(100, task.progressPercent, false)
-            .setContentText("${task.progressPercent}%  ${FileSizeFormatter.fmt(task.speedBytesPerSec)}/s")
+            .setContentText("${task.progressPercent}% · ${FileSizeFormatter.fmt(task.speedBytesPerSec)}/s")
         (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(ID, b.build())
     } catch (_: Throwable) {}
     fun complete(ctx: Context, task: DownloadTask) = try {
         val b = base(ctx, task).setOngoing(false)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setContentTitle("下载完成").setContentText(task.fileName).setAutoCancel(true)
+            .setContentTitle("下载完成 · 点击安装").setContentText(task.fileName).setAutoCancel(true)
         installPending(ctx, task)?.let { b.setContentIntent(it) }
         (ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager).notify(ID, b.build())
     } catch (_: Throwable) {}

@@ -7,10 +7,10 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dlmaster.MainActivity
 import com.dlmaster.R
 import com.dlmaster.download.AnalyzeResult
+import com.dlmaster.download.DownloadRepository
 import com.dlmaster.download.DownloadStrategy
 import com.dlmaster.download.SmartAnalyzer
 import com.dlmaster.util.CommandDownloader
@@ -33,21 +34,35 @@ class HomeFragment : Fragment() {
         i.inflate(R.layout.fragment_home, c, false)
 
     override fun onViewCreated(view: View, s: Bundle?) {
+        try {
+            val a = arrayOf(R.id.tv_title, R.id.tv_subtitle, R.id.card_input)
+            a.forEachIndexed { idx, id ->
+                view.findViewById<View>(id)?.startAnimation(
+                    AnimationUtils.loadAnimation(requireContext(), R.anim.text_rise).apply {
+                        startOffset = idx * 80L
+                    })
+            }
+        } catch (_: Throwable) {}
+
         val et = view.findViewById<EditText>(R.id.et_url)
 
         view.findViewById<MaterialButton>(R.id.btn_oneclick).setOnClickListener {
             val t = et.text.toString().trim()
             if (t.isEmpty()) { Snackbar.make(view, "先粘个链接", Snackbar.LENGTH_SHORT).show(); return@setOnClickListener }
+            vibrate()
             val loading = AlertDialog.Builder(requireContext()).setMessage("正在找最快的路…").setCancelable(false).create()
             loading.show()
+            try {
+                loading.window?.setBackgroundDrawableResource(android.R.color.transparent)
+                val dm = resources.displayMetrics
+                loading.window?.setLayout((dm.widthPixels * 0.7).toInt(), -2)
+            } catch (_: Throwable) {}
             lifecycleScope.launch {
                 val r = try { SmartAnalyzer.analyze(t) } catch (_: Throwable) { null }
                 if (loading.isShowing) loading.dismiss()
-                if (r == null) {
-                    Snackbar.make(view, "分析失败，检查链接或网络", Snackbar.LENGTH_SHORT).show()
-                } else {
+                if (r == null) Snackbar.make(view, "分析失败", Snackbar.LENGTH_SHORT).show()
+                else {
                     CommandDownloader.launchWithStrategy(requireContext(), r, r.best)
-                    Snackbar.make(view, "「${r.best.displayName}」已启动", Snackbar.LENGTH_SHORT).show()
                     et.setText("")
                     jump(R.id.nav_download)
                 }
@@ -57,8 +72,14 @@ class HomeFragment : Fragment() {
         view.findViewById<MaterialButton>(R.id.btn_analyze).setOnClickListener {
             val t = et.text.toString().trim()
             if (t.isEmpty()) { Snackbar.make(view, "先粘个链接", Snackbar.LENGTH_SHORT).show(); return@setOnClickListener }
+            vibrate()
             val loading = AlertDialog.Builder(requireContext()).setMessage("分析中…").setCancelable(false).create()
             loading.show()
+            try {
+                loading.window?.setBackgroundDrawableResource(android.R.color.transparent)
+                val dm = resources.displayMetrics
+                loading.window?.setLayout((dm.widthPixels * 0.7).toInt(), -2)
+            } catch (_: Throwable) {}
             lifecycleScope.launch {
                 val r = try { SmartAnalyzer.analyze(t) } catch (_: Throwable) { null }
                 if (loading.isShowing) loading.dismiss()
@@ -68,6 +89,7 @@ class HomeFragment : Fragment() {
         }
 
         view.findViewById<MaterialCardView>(R.id.card_clip).setOnClickListener {
+            vibrate()
             val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = cm.primaryClip
             val txt = if (clip != null && clip.itemCount > 0) clip.getItemAt(0).coerceToText(requireContext()).toString() else ""
@@ -76,25 +98,33 @@ class HomeFragment : Fragment() {
         }
 
         view.findViewById<MaterialCardView>(R.id.card_batch).setOnClickListener {
+            vibrate()
             val dlg = AlertDialog.Builder(requireContext()).create()
-            val iv = layoutInflater.inflate(android.R.layout.simple_list_item_1, null)
-            val ed = android.widget.EditText(requireContext()).apply {
-                hint = "每行一条链接"
-                setPadding(40, 40, 40, 40)
-            }
-            dlg.setTitle("批量下载")
-            dlg.setView(ed)
+            val ed = EditText(requireContext()).apply { hint = "每行一条链接"; setPadding(40, 40, 40, 40); minLines = 4 }
+            dlg.setTitle("批量下载"); dlg.setView(ed)
             dlg.setButton(AlertDialog.BUTTON_POSITIVE, "开始") { _, _ ->
-                val lines = ed.text.toString().lines().filter { it.trim().isNotEmpty() }
-                Toast.makeText(requireContext(), "已加入 ${lines.size} 条", Toast.LENGTH_SHORT).show()
-                lines.forEach { CommandDownloader.directDownload(it.trim(), requireContext()) }
-                jump(R.id.nav_download)
+                val lines = ed.text.toString().lines().map { it.trim() }.filter { it.isNotEmpty() }
+                lines.forEach { CommandDownloader.directDownload(it, requireContext()) }
+                if (lines.isNotEmpty()) jump(R.id.nav_download)
             }
             dlg.setButton(AlertDialog.BUTTON_NEGATIVE, "取消", null as android.content.DialogInterface.OnClickListener?)
             dlg.show()
+            try {
+                dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
+                val dm = resources.displayMetrics
+                dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), -2)
+            } catch (_: Throwable) {}
         }
 
-        // 音乐
+        view.findViewById<MaterialCardView>(R.id.card_sniff).setOnClickListener {
+            vibrate()
+            val list = DownloadRepository.sniffed.toList()
+            if (list.isEmpty()) {
+                Snackbar.make(view, "还没抓到链接，去浏览器逛逛", Snackbar.LENGTH_SHORT).show()
+                jump(R.id.nav_browser)
+            } else showSniffDialog(list)
+        }
+
         val tvMusic = view.findViewById<TextView>(R.id.tv_music_name)
         val btnT = view.findViewById<ImageButton>(R.id.btn_music_toggle)
         val btnN = view.findViewById<ImageButton>(R.id.btn_music_next)
@@ -108,10 +138,6 @@ class HomeFragment : Fragment() {
 
         view.findViewById<MaterialCardView>(R.id.card_browse).setOnClickListener { jump(R.id.nav_browser) }
         view.findViewById<MaterialCardView>(R.id.card_downloads).setOnClickListener { jump(R.id.nav_download) }
-        view.findViewById<MaterialCardView>(R.id.card_history).setOnClickListener {
-            Snackbar.make(view, "下载历史在任务页搜索框", Snackbar.LENGTH_SHORT).show()
-            jump(R.id.nav_download)
-        }
     }
 
     private fun showResult(r: AnalyzeResult) {
@@ -132,16 +158,52 @@ class HomeFragment : Fragment() {
         var sel = r.best
         val rv = root.findViewById<RecyclerView>(R.id.rv_strategy)
         rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.itemAnimator = null
         rv.adapter = StrategyAdapter(choices, r.best) { sel = it }
         root.findViewById<MaterialButton>(R.id.btn_cancel).setOnClickListener { dlg.dismiss() }
         root.findViewById<MaterialButton>(R.id.btn_start).setOnClickListener {
             dlg.dismiss()
             CommandDownloader.launchWithStrategy(requireContext(), r, sel)
-            Snackbar.make(requireView(), "「${sel.displayName}」已启动", Snackbar.LENGTH_SHORT).show()
             jump(R.id.nav_download)
         }
         dlg.show()
-        try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent) } catch (_: Throwable) {}
+        try {
+            dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dlg.window?.setWindowAnimations(R.style.DialogAnim)
+            val dm = resources.displayMetrics
+            dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), -2)
+        } catch (_: Throwable) {}
+    }
+
+    private fun showSniffDialog(list: List<String>) {
+        val dlg = AlertDialog.Builder(requireContext()).create()
+        val root = layoutInflater.inflate(R.layout.dialog_sniff, null)
+        dlg.setView(root)
+        root.findViewById<TextView>(R.id.tv_sniff_count).text = "共 ${list.size} 个资源，点一条直接开跑"
+        val rv = root.findViewById<RecyclerView>(R.id.rv_sniff)
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.itemAnimator = null
+        rv.adapter = SniffAdapter(list) { url ->
+            CommandDownloader.sniffDownload(requireContext(), url)
+            dlg.dismiss()
+            jump(R.id.nav_download)
+        }
+        root.findViewById<MaterialButton>(R.id.btn_sniff_close).setOnClickListener { dlg.dismiss() }
+        dlg.show()
+        try {
+            dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dlg.window?.setWindowAnimations(R.style.DialogAnim)
+            val dm = resources.displayMetrics
+            dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), -2)
+        } catch (_: Throwable) {}
+    }
+
+    private fun vibrate() {
+        try {
+            val v = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+            if (android.os.Build.VERSION.SDK_INT >= 26) v.vibrate(android.os.VibrationEffect.createOneShot(12, 40))
+            else { @Suppress("DEPRECATION") v.vibrate(12) }
+        } catch (_: Throwable) {}
     }
 
     private fun jump(id: Int) {
@@ -150,8 +212,7 @@ class HomeFragment : Fragment() {
 }
 
 class StrategyAdapter(
-    private val items: List<DownloadStrategy>,
-    def: DownloadStrategy,
+    private val items: List<DownloadStrategy>, def: DownloadStrategy,
     private val onSel: (DownloadStrategy) -> Unit
 ) : RecyclerView.Adapter<StrategyAdapter.VH>() {
     private var selKey = def.key
@@ -164,10 +225,31 @@ class StrategyAdapter(
     override fun getItemCount() = items.size
     override fun onBindViewHolder(h: VH, pos: Int) {
         val s = items[pos]
-        h.name.text = s.displayName
-        h.desc.text = s.blurb
+        h.name.text = s.displayName; h.desc.text = s.blurb
         val isSel = s.key == selKey
         h.box.setBackgroundResource(if (isSel) R.drawable.strategy_item_selected else R.drawable.strategy_item_bg)
-        h.box.setOnClickListener { selKey = s.key; onSel(s); notifyDataSetChanged() }
+        h.box.setOnClickListener {
+            selKey = s.key; onSel(s); notifyDataSetChanged()
+            try { h.box.startAnimation(AnimationUtils.loadAnimation(h.box.context, R.anim.item_in)) } catch (_: Throwable) {}
+        }
+    }
+}
+
+class SniffAdapter(
+    private val items: List<String>, private val onClick: (String) -> Unit
+) : RecyclerView.Adapter<SniffAdapter.VH>() {
+    class VH(v: View) : RecyclerView.ViewHolder(v) {
+        val name: TextView = v.findViewById(R.id.tv_sniff_name)
+        val ext: TextView = v.findViewById(R.id.tv_sniff_ext)
+    }
+    override fun onCreateViewHolder(p: ViewGroup, t: Int): VH = VH(LayoutInflater.from(p.context).inflate(R.layout.item_sniff, p, false))
+    override fun getItemCount() = items.size
+    override fun onBindViewHolder(h: VH, pos: Int) {
+        val url = items[pos]
+        val name = url.substringAfterLast('/').substringBefore('?').ifBlank { "资源" }
+        val ext = url.substringAfterLast('.', "").lowercase()
+        h.name.text = name
+        h.ext.text = if (ext.isNotEmpty()) ".$ext  ·  ${url.take(60)}" else url.take(60)
+        h.itemView.setOnClickListener { onClick(url) }
     }
 }

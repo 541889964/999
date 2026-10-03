@@ -1,6 +1,6 @@
 package com.dlmaster.download
-import com.dlmaster.netdisk.NetdiskResolver
 import com.dlmaster.sniffer.ThunderParser
+import com.dlmaster.netdisk.NetdiskResolver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -29,7 +29,6 @@ object SmartAnalyzer {
             .connectionPool(okhttp3.ConnectionPool(16, 5, TimeUnit.MINUTES))
             .build()
     }
-
     suspend fun analyze(raw: String): AnalyzeResult = withContext(Dispatchers.IO) {
         val input = raw.trim()
         var resolved = input
@@ -69,7 +68,6 @@ object SmartAnalyzer {
         val (best, alts, note) = pick(kind, size, range)
         AnalyzeResult(input, resolved, kind, size, range, ct, name, best, alts, hint, note)
     }
-
     private fun detect(s: String): LinkKind = when {
         s.startsWith("thunder://") -> LinkKind.THUNDER
         s.startsWith("magnet:") -> LinkKind.MAGNET
@@ -79,7 +77,6 @@ object SmartAnalyzer {
         s.startsWith("http", true) -> LinkKind.HTTP
         else -> LinkKind.UNKNOWN
     }
-
     private data class P(val best: DownloadStrategy, val alts: List<DownloadStrategy>, val note: String)
     private fun pick(kind: LinkKind, size: Long, range: Boolean): P {
         if (kind == LinkKind.HLS) return P(DownloadStrategy.HLS, listOf(DownloadStrategy.T8, DownloadStrategy.SINGLE), "识别为 HLS 分片流")

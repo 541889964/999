@@ -2,18 +2,15 @@
 <resources>
     <color name="primary">#FF3D7EFF</color>
     <color name="primary_dark">#FF1E56CC</color>
+    <color name="primary_light">#FF6BA1FF</color>
     <color name="accent">#FF00E5C0</color>
     <color name="bg">#FF000000</color>
-    <color name="surface">#FFFFFFFF</color>
-    <color name="on_surface">#FF10131A</color>
-    <color name="on_surface_2">#FF6E7480</color>
     <color name="white">#FFFFFFFF</color>
     <color name="nav_tint">#FF3D7EFF</color>
-    <color name="card_a">#E610141C</color>
-    <color name="card_b">#CC10141C</color>
-    <color name="card_light">#E6FFFFFF</color>
     <color name="ripple">#33FFFFFF</color>
     <color name="glass_stroke">#26FFFFFF</color>
+    <color name="glass_stroke_strong">#40FFFFFF</color>
     <color name="txt_primary">#FFEEF1F6</color>
-    <color name="txt_secondary">#FF9BA3B4</color>
+    <color name="txt_secondary">#FFAAB2C0</color>
+    <color name="txt_hint">#FF8C94A8</color>
 </resources>
