@@ -8,9 +8,7 @@ class WebSniffer(private val webView: WebView) {
     fun interceptRequests() {
         try {
             webView.webViewClient = object : WebViewClient() {
-                override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
-                    return null
-                }
+                override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? = null
             }
         } catch (_: Throwable) {}
     }

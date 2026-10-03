@@ -16,9 +16,7 @@ object CommandDownloader {
                 ThunderParser.isThunder(input) -> ThunderParser.parse(input) ?: return
                 input.startsWith("magnet:") -> input
                 NetdiskResolver.isNetdiskLink(input) -> input
-                input.startsWith("http", true) -> {
-                    if (looksLikePage(input)) return else input
-                }
+                input.startsWith("http", true) -> if (looksLikePage(input)) return else input
                 else -> return
             }
             start(ctx, url, 8)
@@ -42,9 +40,7 @@ object CommandDownloader {
                     task.fileName = f.name
                     task.status = DownloadTask.Status.DONE
                 } else task.status = DownloadTask.Status.FAILED
-            } catch (_: Throwable) {
-                task.status = DownloadTask.Status.FAILED
-            }
+            } catch (_: Throwable) { task.status = DownloadTask.Status.FAILED }
         }
     }
     private fun looksLikePage(url: String): Boolean {

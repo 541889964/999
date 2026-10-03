@@ -9,8 +9,8 @@ android {
         applicationId = "com.dlmaster"
         minSdk = 21
         targetSdk = 34
-        versionCode = 4
-        versionName = "4.0.0"
+        versionCode = 5
+        versionName = "5.0.0"
         vectorDrawables { useSupportLibrary = true }
     }
     buildTypes {
@@ -24,7 +24,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { viewBinding = false }
 }
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")

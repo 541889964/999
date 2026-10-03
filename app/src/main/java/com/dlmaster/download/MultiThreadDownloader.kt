@@ -1,5 +1,4 @@
 package com.dlmaster.download
-import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -20,16 +19,13 @@ object MultiThreadDownloader {
             .build()
     }
     suspend fun download(
-        url: String,
-        targetDir: File,
-        threads: Int = 8,
+        url: String, targetDir: File, threads: Int = 8,
         onProgress: (Long, Long) -> Unit
     ): File? = withContext(Dispatchers.IO) {
         try {
             if (!targetDir.exists()) targetDir.mkdirs()
             val head = Request.Builder().url(url).head()
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android 12)")
-                .build()
+                .header("User-Agent", "Mozilla/5.0 (Linux; Android 12)").build()
             val headResp = client.newCall(head).execute()
             val total = headResp.header("Content-Length")?.toLongOrNull() ?: 0L
             headResp.close()
@@ -45,42 +41,34 @@ object MultiThreadDownloader {
                 val start = i * chunk
                 val end = if (i == threads - 1) total - 1 else start + chunk - 1
                 pool.execute {
-                    try {
-                        range(url, out, start, end) { n ->
-                            onProgress(done.addAndGet(n), total)
-                        }
-                    } finally { latch.countDown() }
+                    try { range(url, out, start, end) { n -> onProgress(done.addAndGet(n), total) } }
+                    finally { latch.countDown() }
                 }
             }
-            latch.await()
-            pool.shutdown()
+            latch.await(); pool.shutdown()
             onProgress(total, total)
             out
         } catch (_: Throwable) { null }
     }
-    private fun single(url: String, out: File, onProgress: (Long, Long) -> Unit): File? {
-        return try {
-            val req = Request.Builder().url(url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android 12)").build()
-            client.newCall(req).execute().use { r ->
-                if (!r.isSuccessful) return null
-                val total = r.body?.contentLength() ?: 0L
-                var read = 0L
-                r.body?.byteStream()?.use { input ->
-                    out.outputStream().use { output ->
-                        val buf = ByteArray(64 * 1024)
-                        var n: Int
-                        while (input.read(buf).also { n = it } > 0) {
-                            output.write(buf, 0, n)
-                            read += n
-                            onProgress(read, total)
-                        }
+    private fun single(url: String, out: File, onProgress: (Long, Long) -> Unit): File? = try {
+        val req = Request.Builder().url(url)
+            .header("User-Agent", "Mozilla/5.0 (Linux; Android 12)").build()
+        client.newCall(req).execute().use { r ->
+            if (!r.isSuccessful) return null
+            val total = r.body?.contentLength() ?: 0L
+            var read = 0L
+            r.body?.byteStream()?.use { input ->
+                out.outputStream().use { output ->
+                    val buf = ByteArray(64 * 1024); var n: Int
+                    while (input.read(buf).also { n = it } > 0) {
+                        output.write(buf, 0, n); read += n
+                        onProgress(read, total)
                     }
                 }
             }
-            out
-        } catch (_: Throwable) { null }
-    }
+        }
+        out
+    } catch (_: Throwable) { null }
     private fun range(url: String, out: File, start: Long, end: Long, onBytes: (Long) -> Unit) {
         try {
             val req = Request.Builder().url(url)
@@ -91,11 +79,9 @@ object MultiThreadDownloader {
                 RandomAccessFile(out, "rw").use { raf ->
                     raf.seek(start)
                     r.body?.byteStream()?.use { input ->
-                        val buf = ByteArray(64 * 1024)
-                        var n: Int
+                        val buf = ByteArray(64 * 1024); var n: Int
                         while (input.read(buf).also { n = it } > 0) {
-                            raf.write(buf, 0, n)
-                            onBytes(n.toLong())
+                            raf.write(buf, 0, n); onBytes(n.toLong())
                         }
                     }
                 }

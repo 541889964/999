@@ -1,25 +1,54 @@
 package com.dlmaster
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.dlmaster.ui.browser.BrowserFragment
 import com.dlmaster.ui.download.DownloadFragment
 import com.dlmaster.ui.home.HomeFragment
 import com.dlmaster.ui.settings.SettingsFragment
 import com.dlmaster.util.BackgroundList
+import com.dlmaster.util.MusicPlayer
+import com.dlmaster.util.PermissionHelper
 import com.dlmaster.util.Prefs
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlin.random.Random
+
 class MainActivity : AppCompatActivity() {
+
     private lateinit var bg: ImageView
+    private val bgHandler = Handler(Looper.getMainLooper())
+    private var currentBgIndex = -1
+    private var bgIds: IntArray = intArrayOf()
+
+    private val bgSwitchRunnable = object : Runnable {
+        override fun run() {
+            switchNextBg()
+            bgHandler.postDelayed(this, BG_INTERVAL_MS)
+        }
+    }
+
+    companion object {
+        private const val BG_INTERVAL_MS = 10_000L
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        bgIds = BackgroundList.RES_IDS
         bg = findViewById(R.id.iv_background)
-        applyBg()
+
+        PermissionHelper.requestAudio(this)
+        if (Prefs.musicEnabled(this)) {
+            MusicPlayer.start(applicationContext)
+        }
+
         val nav = findViewById<BottomNavigationView>(R.id.bottom_nav)
         nav.setOnItemSelectedListener { item ->
             val f: Fragment = when (item.itemId) {
@@ -38,20 +67,50 @@ class MainActivity : AppCompatActivity() {
         }
         if (savedInstanceState == null) nav.selectedItemId = R.id.nav_home
     }
-    private fun applyBg() {
+
+    override fun onResume() {
+        super.onResume()
+        if (Prefs.bgEnabled(this)) {
+            bgHandler.removeCallbacks(bgSwitchRunnable)
+            switchNextBg()
+            bgHandler.postDelayed(bgSwitchRunnable, BG_INTERVAL_MS)
+        } else {
+            bg.setImageDrawable(null)
+        }
+        if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) {
+            MusicPlayer.start(applicationContext)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        bgHandler.removeCallbacks(bgSwitchRunnable)
+    }
+
+    private fun switchNextBg() {
+        if (bgIds.isEmpty()) return
+        if (!Prefs.bgEnabled(this)) { bg.setImageDrawable(null); return }
+        val next: Int = if (bgIds.size == 1) 0 else {
+            var n: Int
+            do { n = Random.nextInt(bgIds.size) } while (n == currentBgIndex)
+            n
+        }
+        currentBgIndex = next
         try {
-            if (!Prefs.bgEnabled(this)) { bg.setImageDrawable(null); return }
-            val ids = BackgroundList.RES_IDS
-            if (ids.isEmpty()) return
-            val i = Prefs.nextBgIndex(this, ids.size)
             Glide.with(applicationContext)
-                .load(ids[i])
-                .dontAnimate()
+                .load(bgIds[next])
+                .transition(DrawableTransitionOptions.withCrossFade(800))
                 .centerCrop()
                 .format(DecodeFormat.PREFER_RGB_565)
                 .override(720, 1280)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(false)
                 .into(bg)
         } catch (_: Throwable) {}
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        bgHandler.removeCallbacks(bgSwitchRunnable)
     }
 }

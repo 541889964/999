@@ -6,8 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/s"
     app:cardCornerRadius="@dimen/radius"
-    app:cardElevation="3dp"
-    app:cardBackgroundColor="#F5FFFFFF">
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/card_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,14 +29,16 @@
             android:id="@+id/progress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/s" />
+            android:layout_marginTop="@dimen/s"
+            app:trackCornerRadius="4dp"
+            app:indicatorColor="@color/primary" />
 
         <TextView
             android:id="@+id/tv_info"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
-            android:textColor="@color/secondary"
+            android:textColor="@color/on_surface_2"
             android:textSize="12sp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

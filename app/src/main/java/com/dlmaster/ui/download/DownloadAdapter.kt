@@ -21,6 +21,6 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
         val t = items[pos]
         h.name.text = t.fileName
         h.progress.progress = t.progressPercent
-        h.info.text = "${FileSizeFormatter.fmt(t.downloadedBytes)} / ${FileSizeFormatter.fmt(t.totalBytes)}  ${t.status}"
+        h.info.text = "${FileSizeFormatter.fmt(t.downloadedBytes)} / ${FileSizeFormatter.fmt(t.totalBytes)}  ·  ${t.status}"
     }
 }
