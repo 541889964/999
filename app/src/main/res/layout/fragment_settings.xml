@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="vertical" android:padding="@dimen/m" android:paddingBottom="100dp">
+        android:orientation="vertical" android:padding="@dimen/m" android:paddingBottom="120dp">
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:layout_marginTop="44dp" android:text="设置"
@@ -14,48 +14,96 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardCornerRadius="@dimen/radius" app:cardBackgroundColor="@color/card_a"
-            app:cardElevation="6dp" app:strokeColor="#33FFFFFF" app:strokeWidth="0.5dp">
+            app:cardCornerRadius="@dimen/radius" app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/transparent">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical" android:padding="@dimen/m">
+                android:orientation="vertical" android:padding="16dp"
+                android:background="@drawable/card_glass">
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:gravity="center_vertical">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:text="@string/settings_bg"
-                        android:textColor="@color/on_surface" android:textSize="15sp" />
+                        android:textColor="@color/txt_primary" android:textSize="15sp" />
                     <Switch android:id="@+id/sw_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                 </LinearLayout>
 
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:layout_marginTop="12dp" android:text="@string/settings_bg_freq"
-                    android:textColor="@color/on_surface_2" android:textSize="12sp" />
+                    android:textColor="@color/txt_secondary" android:textSize="12sp" />
                 <SeekBar android:id="@+id/sb_freq" android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:max="5" android:progress="2" />
                 <TextView android:id="@+id/tv_freq" android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:text="10 秒" android:textColor="@color/primary" android:textSize="12sp" android:textStyle="bold" />
 
                 <View android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/m" android:background="#14000000" />
-
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:text="@string/settings_music"
-                        android:textColor="@color/on_surface" android:textSize="15sp" />
-                    <Switch android:id="@+id/sw_music" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <View android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/m" android:background="#14000000" />
+                    android:layout_marginVertical="@dimen/m" android:background="#1AFFFFFF" />
 
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:gravity="center_vertical">
                     <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:text="@string/settings_translucent"
-                        android:textColor="@color/on_surface" android:textSize="15sp" />
+                        android:textColor="@color/txt_primary" android:textSize="15sp" />
                     <Switch android:id="@+id/sw_trans" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                 </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/m" android:background="#1AFFFFFF" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="@string/settings_music"
+                        android:textColor="@color/txt_primary" android:textSize="15sp" />
+                    <Switch android:id="@+id/sw_music" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/m" android:background="#1AFFFFFF" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="@string/settings_clipboard"
+                        android:textColor="@color/txt_primary" android:textSize="15sp" />
+                    <Switch android:id="@+id/sw_clip" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_clear_cache"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="@dimen/radius" app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/transparent">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:padding="16dp" android:background="@drawable/card_glass">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="清理缓存"
+                    android:textColor="@color/txt_primary" android:textSize="15sp" />
+                <TextView android:id="@+id/tv_cache_size" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="0 MB"
+                    android:textColor="@color/txt_secondary" android:textSize="13sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_about"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="@dimen/radius" app:cardElevation="0dp"
+            app:cardBackgroundColor="@android:color/transparent">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical"
+                android:padding="16dp" android:background="@drawable/card_glass">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="关于下载工具"
+                    android:textColor="@color/txt_primary" android:textSize="15sp" />
+                <TextView android:id="@+id/tv_version" android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:text="v8.0"
+                    android:textColor="@color/txt_secondary" android:textSize="13sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

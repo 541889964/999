@@ -7,6 +7,7 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -16,8 +17,9 @@ import com.dlmaster.util.FileSizeFormatter
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import java.io.File
 class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerView.Adapter<DownloadAdapter.VH>() {
-    class VH(parent: ViewGroup) : RecyclerView.ViewHolder(
-        LayoutInflater.from(parent.context).inflate(R.layout.item_download, parent, false)
+    private var filtered: List<DownloadTask>? = null
+    class VH(p: ViewGroup) : RecyclerView.ViewHolder(
+        LayoutInflater.from(p.context).inflate(R.layout.item_download, p, false)
     ) {
         val name: TextView = itemView.findViewById(R.id.tv_name)
         val pct: TextView = itemView.findViewById(R.id.tv_pct)
@@ -26,21 +28,21 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
         val strategy: TextView = itemView.findViewById(R.id.tv_strategy)
         val action: TextView = itemView.findViewById(R.id.tv_action)
     }
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(parent)
-    override fun getItemCount() = items.size
+    fun setFiltered(list: List<DownloadTask>) { filtered = list; notifyDataSetChanged() }
+    private fun list(): List<DownloadTask> = filtered ?: items
+    override fun onCreateViewHolder(p: ViewGroup, t: Int) = VH(p)
+    override fun getItemCount() = list().size
     override fun onBindViewHolder(h: VH, pos: Int) {
-        val t = items[pos]
+        val t = list()[pos]
         h.name.text = t.fileName
         h.progress.progress = t.progressPercent
         h.pct.text = "${t.progressPercent}%"
         h.strategy.text = t.strategy.displayName
-        val downloaded = FileSizeFormatter.fmt(t.downloadedBytes)
-        val total = FileSizeFormatter.fmt(t.totalBytes)
-        val speed = if (t.speedBytesPerSec > 0) "  ${FileSizeFormatter.fmt(t.speedBytesPerSec)}/s" else ""
-        h.info.text = "$downloaded / $total$speed"
+        h.info.text = "${FileSizeFormatter.fmt(t.downloadedBytes)} / ${FileSizeFormatter.fmt(t.totalBytes)}" +
+                (if (t.speedBytesPerSec > 0) "  ${FileSizeFormatter.fmt(t.speedBytesPerSec)}/s" else "")
         h.action.text = when (t.status) {
             DownloadTask.Status.DONE -> "安装"
-            DownloadTask.Status.FAILED -> "重试"
+            DownloadTask.Status.FAILED -> "失败"
             DownloadTask.Status.RUNNING -> "进行中"
             else -> ""
         }
@@ -56,24 +58,21 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
                     cm.setPrimaryClip(ClipData.newPlainText("url", t.url))
                 } catch (_: Throwable) {}
                 "安装" -> tryInstall(ctx, t)
-                "删除" -> { items.remove(t); notifyDataSetChanged() }
+                "删除" -> { items.remove(t); filtered = null; notifyDataSetChanged() }
             }
         }.show()
     }
-    private fun tryInstall(ctx: Context, t: DownloadTask) {
-        try {
-            val f = File(t.savedPath); if (!f.exists()) return
-            val uri: Uri = if (android.os.Build.VERSION.SDK_INT >= 24)
-                FileProvider.getUriForFile(ctx, ctx.packageName + ".fileprovider", f)
-            else Uri.fromFile(f)
-            val i = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-            ctx.startActivity(i)
-        } catch (e: Throwable) {
-            android.widget.Toast.makeText(ctx, "打不开安装: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+    private fun tryInstall(ctx: Context, t: DownloadTask) = try {
+        val f = File(t.savedPath); if (!f.exists()) throw Exception("文件不存在")
+        val uri: Uri = if (android.os.Build.VERSION.SDK_INT >= 24)
+            FileProvider.getUriForFile(ctx, ctx.packageName + ".fileprovider", f) else Uri.fromFile(f)
+        val i = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+        ctx.startActivity(i)
+    } catch (e: Throwable) {
+        Toast.makeText(ctx, "打不开安装: ${e.message}", Toast.LENGTH_SHORT).show()
     }
 }

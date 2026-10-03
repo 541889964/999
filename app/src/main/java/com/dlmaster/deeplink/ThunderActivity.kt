@@ -8,7 +8,7 @@ class ThunderActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         try {
             intent?.data?.toString()?.let {
-                CommandDownloader.smartAnalyzeAndDownload(this, it, lifecycleScope) { _ -> }
+                CommandDownloader.oneClick(this, it, lifecycleScope) { _ -> }
             }
         } catch (_: Throwable) {}
         finish()

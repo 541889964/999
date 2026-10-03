@@ -12,42 +12,35 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 object CommandDownloader {
-
-    fun startWithAnalysis(ctx: Context, r: AnalyzeResult, strategy: DownloadStrategy) {
-        val t = DownloadTask(
-            url = r.resolved,
-            fileName = r.fileName,
-            strategy = strategy,
-            referer = if (strategy == DownloadStrategy.STEALTH) "https://www.google.com/" else null
-        )
-        DownloadRepository.addTask(t)
-        run(ctx, t, strategy)
-    }
-
-    /** 直接智能下载：先分析，再用推荐方案 */
-    fun smartAnalyzeAndDownload(ctx: Context, url: String, scope: CoroutineScope, cb: (AnalyzeResult?) -> Unit) {
+    /** 一键：先分析，用最快方案开跑 */
+    fun oneClick(ctx: Context, url: String, scope: CoroutineScope, onResult: (AnalyzeResult?) -> Unit) {
         scope.launch {
             val r = try { SmartAnalyzer.analyze(url) } catch (_: Throwable) { null }
-            cb(r)
-            if (r != null) startWithAnalysis(ctx, r, r.best)
+            onResult(r)
+            if (r != null) launchWithStrategy(ctx, r, r.best)
         }
     }
-
-    /** 直接极速下载：跳过分析，走 32 线程 */
+    fun launchWithStrategy(ctx: Context, r: AnalyzeResult, s: DownloadStrategy) {
+        val t = DownloadTask(
+            url = r.resolved, fileName = r.fileName, strategy = s,
+            referer = if (s == DownloadStrategy.STEALTH) "https://www.google.com/" else null
+        )
+        DownloadRepository.addTask(t)
+        run(ctx, t, s)
+    }
     fun directDownload(url: String, ctx: Context) {
         val t = DownloadTask(url = url, strategy = DownloadStrategy.T32)
         DownloadRepository.addTask(t)
         run(ctx, t, DownloadStrategy.T32)
     }
-
-    private fun run(ctx: Context, task: DownloadTask, strategy: DownloadStrategy) {
+    private fun run(ctx: Context, task: DownloadTask, s: DownloadStrategy) {
         task.status = DownloadTask.Status.RUNNING
         DownloadRepository.notifyUpdate()
         DownloadNotifier.ensure(ctx)
         val dir = File(ctx.getExternalFilesDir(null) ?: ctx.filesDir, "downloads")
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val f = SmartDownloader.download(task.url, dir, strategy, task.referer) { d, total, speed ->
+                val f = SmartDownloader.download(task.url, dir, s, task.referer) { d, total, speed ->
                     task.downloadedBytes = d
                     if (total > 0) task.totalBytes = total
                     task.speedBytesPerSec = speed

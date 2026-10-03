@@ -1,13 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <EditText android:id="@+id/et_search"
+        android:layout_width="0dp" android:layout_height="44dp"
+        android:layout_marginTop="44dp" android:layout_marginStart="12dp" android:layout_marginEnd="12dp"
+        android:background="@drawable/glass_input"
+        android:paddingStart="14dp" android:paddingEnd="14dp"
+        android:hint="搜索任务" android:textColorHint="@color/txt_secondary"
+        android:textColor="@color/txt_primary" android:textSize="13sp"
+        android:inputType="text" android:maxLines="1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_downloads"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        android:clipToPadding="false" android:paddingTop="44dp" android:paddingBottom="100dp"
-        android:paddingStart="@dimen/s" android:paddingEnd="@dimen/s" />
+        android:layout_width="0dp" android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
+        android:paddingStart="@dimen/s" android:paddingEnd="@dimen/s"
+        app:layout_constraintTop_toBottomOf="@id/et_search"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" />
+
     <TextView android:id="@+id/tv_empty" android:layout_width="wrap_content" android:layout_height="wrap_content"
-        android:layout_gravity="center" android:text="暂无任务"
-        android:textColor="@color/white" android:textSize="14sp"
-        android:shadowColor="#99000000" android:shadowDx="0" android:shadowDy="1" android:shadowRadius="3"
-        android:visibility="gone" />
-</FrameLayout>
+        android:text="还没有任务"
+        android:textColor="@color/txt_secondary" android:textSize="14sp"
+        app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

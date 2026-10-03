@@ -6,8 +6,7 @@ import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 object PermissionHelper {
-    private const val REQ = 1001
-    private const val REQ_N = 1002
+    private const val REQ = 1001; private const val REQ_N = 1002
     fun requestBase(activity: Activity) {
         val perms = mutableListOf<String>()
         if (Build.VERSION.SDK_INT >= 33) {

@@ -5,15 +5,15 @@
     <string name="nav_download">任务</string>
     <string name="nav_browser">浏览</string>
     <string name="nav_settings">设置</string>
-    <string name="hint_url">粘贴链接，点下面按钮</string>
-    <string name="btn_analyze">智能分析</string>
-    <string name="btn_smart">直接智能下载</string>
-    <string name="btn_direct">直链极速 (32 线程)</string>
+    <string name="hint_url">把链接粘进来，一键搞定</string>
+    <string name="btn_oneclick">一键极速下载</string>
+    <string name="btn_analyze">先看看是什么</string>
     <string name="title_home">下载工具</string>
-    <string name="subtitle_home">粘贴 → 分析 → 用最快的路下载</string>
+    <string name="subtitle_home">粘贴 → 自动挑最快线路 → 开跑</string>
     <string name="settings_bg">图片背景轮播</string>
     <string name="settings_bg_freq">轮播间隔</string>
     <string name="settings_music">背景音乐</string>
-    <string name="settings_translucent">半透明界面</string>
+    <string name="settings_translucent">半透明玻璃卡片</string>
+    <string name="settings_clipboard">监听剪贴板链接</string>
     <string name="music_idle">暂无音乐</string>
 </resources>

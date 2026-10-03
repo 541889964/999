@@ -3,6 +3,6 @@
     <dimen name="s">8dp</dimen>
     <dimen name="m">16dp</dimen>
     <dimen name="l">24dp</dimen>
-    <dimen name="radius">20dp</dimen>
+    <dimen name="radius">22dp</dimen>
     <dimen name="bh">54dp</dimen>
 </resources>
