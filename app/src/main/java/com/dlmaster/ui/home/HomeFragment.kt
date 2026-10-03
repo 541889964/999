@@ -156,7 +156,7 @@ class StrategyAdapter(
 ) : RecyclerView.Adapter<StrategyAdapter.VH>() {
     private var selKey = def.key
     class VH(v: View) : RecyclerView.ViewHolder(v) {
-        val box: android.widget.FrameLayout = v.findViewById(R.id.strategy_box)
+        val box: android.widget.LinearLayout = v.findViewById(R.id.strategy_box)
         val name: TextView = v.findViewById(R.id.tv_s_name)
         val desc: TextView = v.findViewById(R.id.tv_s_desc)
     }

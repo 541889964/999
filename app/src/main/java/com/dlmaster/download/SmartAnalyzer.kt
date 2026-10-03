@@ -23,9 +23,11 @@ data class AnalyzeResult(
 object SmartAnalyzer {
     private val client by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(8, TimeUnit.SECONDS).readTimeout(8, TimeUnit.SECONDS)
+            .connectTimeout(8, TimeUnit.SECONDS).readTimeout(15, TimeUnit.SECONDS)
             .followRedirects(true).followSslRedirects(true)
-            .retryOnConnectionFailure(true).build()
+            .retryOnConnectionFailure(true)
+            .connectionPool(okhttp3.ConnectionPool(16, 5, TimeUnit.MINUTES))
+            .build()
     }
 
     suspend fun analyze(raw: String): AnalyzeResult = withContext(Dispatchers.IO) {

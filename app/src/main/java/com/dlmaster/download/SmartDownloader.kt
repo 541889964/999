@@ -15,8 +15,13 @@ import kotlin.math.min
 object SmartDownloader {
     private val client by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS).readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS).readTimeout(60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true).followRedirects(true).followSslRedirects(true)
+            .connectionPool(okhttp3.ConnectionPool(64, 5, TimeUnit.MINUTES))
+            .dispatcher(okhttp3.Dispatcher().apply {
+                maxRequests = 256
+                maxRequestsPerHost = 32
+            })
             .build()
     }
     const val UA = "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36"
@@ -51,10 +56,10 @@ object SmartDownloader {
             if (!rangeOk || total <= 0L || threads <= 1) return@withContext streamSingle(url, out, referer, onProgress)
             RandomAccessFile(out, "rw").use { it.setLength(total) }
             val useThreads = when {
-                total < 1L * 1024 * 1024 -> 2
-                total < 10L * 1024 * 1024 -> min(threads, 8)
-                total < 100L * 1024 * 1024 -> min(threads, 16)
-                else -> min(threads, 32)
+                total < 1L * 1024 * 1024 -> 4
+                total < 10L * 1024 * 1024 -> min(threads, 12)
+                total < 100L * 1024 * 1024 -> min(threads, 24)
+                else -> min(threads, 48)
             }
             val chunk = total / useThreads
             val done = AtomicLong(0L); val lastReport = AtomicLong(0L)
@@ -66,7 +71,7 @@ object SmartDownloader {
                 val end = if (i == useThreads - 1) total - 1 else start + chunk - 1
                 pool.execute {
                     try {
-                        rangeWithRetry(url, out, start, end, referer, 3) { n ->
+                        rangeWithRetry(url, out, start, end, referer, 5) { n ->
                             val d = done.addAndGet(n)
                             val now = System.currentTimeMillis()
                             if (now - lastReport.get() > 300L || d >= total) {
