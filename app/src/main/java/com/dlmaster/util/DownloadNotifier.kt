@@ -53,7 +53,8 @@ object DownloadNotifier {
                 setDataAndType(uri, "application/vnd.android.package-archive")
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            PendingIntent.getActivity(ctx, 2001, i, if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
+            PendingIntent.getActivity(ctx, 2001, i,
+                if (Build.VERSION.SDK_INT >= 23) PendingIntent.FLAG_IMMUTABLE else 0)
         }
     } catch (_: Throwable) { null }
 }

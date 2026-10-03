@@ -4,7 +4,11 @@ import android.media.MediaPlayer
 import java.io.File
 import kotlin.random.Random
 object MusicPlayer {
-    private val DIRS = arrayOf("/storage/emulated/0/Music/玄音","/storage/emulated/0/Music","/storage/emulated/0/Download")
+    private val DIRS = arrayOf(
+        "/storage/emulated/0/Music/玄音",
+        "/storage/emulated/0/Music",
+        "/storage/emulated/0/Download"
+    )
     private val EXTS = setOf("mp3","m4a","flac","ogg","wav","aac","wma")
     private var player: MediaPlayer? = null
     private var tracks: List<File> = emptyList()
@@ -28,7 +32,8 @@ object MusicPlayer {
     fun pause() { try { player?.takeIf { it.isPlaying }?.pause() } catch (_: Throwable) {} }
     fun resume() { try { player?.start() } catch (_: Throwable) {} }
     fun isPlaying() = try { player?.isPlaying == true } catch (_: Throwable) { false }
-    fun currentTrackName(): String? = if (currentIndex in tracks.indices) tracks[currentIndex].nameWithoutExtension else null
+    fun currentTrackName(): String? =
+        if (currentIndex in tracks.indices) tracks[currentIndex].nameWithoutExtension else null
     fun stop() { try { player?.stop(); player?.release() } catch (_: Throwable) {}; player = null }
     private fun playRandom() {
         if (tracks.isEmpty()) return

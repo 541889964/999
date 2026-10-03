@@ -8,6 +8,7 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
@@ -20,12 +21,14 @@ import com.dlmaster.util.BackgroundList
 import com.dlmaster.util.MusicPlayer
 import com.dlmaster.util.PermissionHelper
 import com.dlmaster.util.Prefs
+import com.dlmaster.view.AuroraBackgroundView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bg1: ImageView
     private lateinit var bg2: ImageView
+    private lateinit var aurora: AuroraBackgroundView
     private val bgHandler = Handler(Looper.getMainLooper())
     private var currentBgIndex = -1
     private var bgIds: IntArray = intArrayOf()
@@ -44,8 +47,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         bgIds = BackgroundList.RES_IDS
         bg1 = findViewById(R.id.iv_bg1); bg2 = findViewById(R.id.iv_bg2)
+        aurora = findViewById(R.id.aurora)
         PermissionHelper.requestNotifications(this)
         if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
         val nav = findViewById<BottomNavigationView>(R.id.bottom_nav)
@@ -58,7 +63,9 @@ class MainActivity : AppCompatActivity() {
             }
             try {
                 supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.frag_in, R.anim.frag_out, R.anim.frag_in, R.anim.frag_out)
+                    .setCustomAnimations(
+                        android.R.anim.fade_in, android.R.anim.fade_out,
+                        android.R.anim.fade_in, android.R.anim.fade_out)
                     .replace(R.id.fragment_container, f)
                     .commitAllowingStateLoss()
             } catch (_: Throwable) {}
@@ -70,6 +77,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume(); paused = false
+        aurora.resume()
         if (Prefs.bgEnabled(this)) {
             bgHandler.removeCallbacks(bgSwitchRunnable)
             switchNextBg()
@@ -80,13 +88,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause(); paused = true
+        aurora.pause()
         bgHandler.removeCallbacks(bgSwitchRunnable)
     }
 
-    /**
-     * 双 ImageView 交叉淡入
-     * 关键修复:withLayer() 加在 target 和 current 两边
-     */
     private fun switchNextBg() {
         if (bgIds.isEmpty() || !Prefs.bgEnabled(this)) return
         val next: Int = if (bgIds.size == 1) 0 else {
@@ -103,14 +108,14 @@ class MainActivity : AppCompatActivity() {
             if (firstLoad) {
                 Glide.with(applicationContext).load(bgIds[next])
                     .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE).into(target)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL).into(target)
                 target.alpha = 1f; current.alpha = 0f
                 firstLoad = false
             } else {
                 target.alpha = 0f
                 Glide.with(applicationContext).load(bgIds[next])
                     .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE).into(target)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL).into(target)
                 target.animate().withLayer().alpha(1f).setDuration(700)
                     .setInterpolator(fastOut).start()
                 current.animate().withLayer().alpha(0f).setDuration(700)

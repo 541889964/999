@@ -30,7 +30,7 @@ class SettingsFragment : Fragment() {
         swClip.isChecked = Prefs.clipboardEnabled(requireContext())
         sb.progress = Prefs.bgFreqIndex(requireContext())
         tvFreq.text = labels[sb.progress]
-        tvVersion.text = "v11.0"
+        tvVersion.text = "v13.0"
         tvCache.text = calcCacheSize()
         sb.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(s: SeekBar?, p: Int, fromUser: Boolean) {
@@ -55,7 +55,7 @@ class SettingsFragment : Fragment() {
         }
         v.findViewById<View>(R.id.card_about).setOnClickListener {
             AlertDialog.Builder(requireContext()).setTitle("关于下载工具").setMessage(
-                "版本 v11.0\n\n找最快的路，一直免费。\n\n粘个链接，剩下的交给它。"
+                "版本 v13.0\n\n找最快的路，一直免费。\n\n粘个链接，剩下的交给它。"
             ).setPositiveButton("好", null).show()
         }
     }

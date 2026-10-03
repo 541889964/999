@@ -7,11 +7,14 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import com.dlmaster.util.PermissionHelper
+
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         PermissionHelper.requestBase(this)
         try {
             findViewById<ImageView>(R.id.iv_logo).startAnimation(

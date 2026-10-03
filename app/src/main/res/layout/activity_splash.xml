@@ -4,14 +4,17 @@
     android:background="@color/primary">
     <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="center" android:orientation="vertical" android:gravity="center">
-        <ImageView android:id="@+id/iv_logo" android:layout_width="112dp" android:layout_height="112dp"
+        <ImageView android:id="@+id/iv_logo"
+            android:layout_width="96dp" android:layout_height="96dp"
             android:src="@drawable/app_logo_hd" android:contentDescription="@null" />
-        <TextView android:id="@+id/tv_brand" android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="18dp" android:text="@string/app_name"
-            android:textColor="@color/white" android:textSize="24sp"
+        <TextView android:id="@+id/tv_brand"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:text="@string/app_name"
+            android:textColor="@color/white" android:textSize="22sp"
             android:letterSpacing="0.15" android:textStyle="bold" />
-        <TextView android:id="@+id/tv_slogan" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        <TextView android:id="@+id/tv_slogan"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:layout_marginTop="6dp" android:text="找最快的路 · 一直免费"
-            android:textColor="#CCFFFFFF" android:textSize="12sp" android:letterSpacing="0.2" />
+            android:textColor="#CCFFFFFF" android:textSize="11sp" android:letterSpacing="0.2" />
     </LinearLayout>
 </FrameLayout>

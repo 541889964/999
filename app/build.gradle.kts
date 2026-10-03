@@ -9,8 +9,8 @@ android {
         applicationId = "com.dlmaster"
         minSdk = 21
         targetSdk = 34
-        versionCode = 11
-        versionName = "11.0.0"
+        versionCode = 13
+        versionName = "13.0.0"
         vectorDrawables { useSupportLibrary = true }
     }
     buildTypes {
@@ -35,7 +35,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.dynamicanimation:dynamicanimation:1.0.0")
-    implementation("androidx.transition:transition:1.4.1")
+    implementation("androidx.window:window:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")

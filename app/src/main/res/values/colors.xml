@@ -13,4 +13,5 @@
     <color name="txt_primary">#FFEEF1F6</color>
     <color name="txt_secondary">#FFAAB2C0</color>
     <color name="txt_hint">#FF8C94A8</color>
+    <color name="divider">#1AFFFFFF</color>
 </resources>

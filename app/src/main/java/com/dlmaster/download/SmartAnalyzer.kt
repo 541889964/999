@@ -59,9 +59,9 @@ object SmartAnalyzer {
                     .header("Range", "bytes=0-1023").build()).execute().close()
                 val dt = max(1L, System.currentTimeMillis() - t0)
                 hint = when {
-                    dt < 250 -> "该服务器响应很快"
+                    dt < 250 -> "服务器响应快"
                     dt < 800 -> "服务器响应正常"
-                    else -> "服务器偏慢，已启用多线程加速"
+                    else -> "服务器偏慢，已多线程加速"
                 }
             } catch (_: Throwable) {}
         }
@@ -79,16 +79,25 @@ object SmartAnalyzer {
     }
     private data class P(val best: DownloadStrategy, val alts: List<DownloadStrategy>, val note: String)
     private fun pick(kind: LinkKind, size: Long, range: Boolean): P {
-        if (kind == LinkKind.HLS) return P(DownloadStrategy.HLS, listOf(DownloadStrategy.T8, DownloadStrategy.SINGLE), "识别为 HLS 分片流")
-        if (kind == LinkKind.DASH) return P(DownloadStrategy.DASH, listOf(DownloadStrategy.T8, DownloadStrategy.SINGLE), "识别为 DASH 分片流")
-        if (kind == LinkKind.MAGNET) return P(DownloadStrategy.T32, listOf(DownloadStrategy.T16, DownloadStrategy.SINGLE), "磁力先用多线程拉种子")
-        if (kind == LinkKind.NETDISK) return P(DownloadStrategy.T8, listOf(DownloadStrategy.T16, DownloadStrategy.SINGLE), "网盘链接尝试直连")
-        if (size <= 0 || !range) return P(DownloadStrategy.SINGLE, listOf(DownloadStrategy.T4, DownloadStrategy.STEALTH), "服务端不支持分段")
+        if (kind == LinkKind.HLS) return P(DownloadStrategy.HLS,
+            listOf(DownloadStrategy.T8, DownloadStrategy.SINGLE), "HLS 分片流")
+        if (kind == LinkKind.DASH) return P(DownloadStrategy.DASH,
+            listOf(DownloadStrategy.T8, DownloadStrategy.SINGLE), "DASH 分片流")
+        if (kind == LinkKind.MAGNET) return P(DownloadStrategy.T32,
+            listOf(DownloadStrategy.ADAPTIVE, DownloadStrategy.T16), "磁力先多线程拉种子")
+        if (kind == LinkKind.NETDISK) return P(DownloadStrategy.T8,
+            listOf(DownloadStrategy.ADAPTIVE, DownloadStrategy.STEALTH), "网盘尝试直连")
+        if (size <= 0 || !range) return P(DownloadStrategy.SINGLE,
+            listOf(DownloadStrategy.STEALTH, DownloadStrategy.T4), "服务端不支持分段")
         return when {
-            size < 2L * 1024 * 1024 -> P(DownloadStrategy.T4, listOf(DownloadStrategy.T8, DownloadStrategy.SINGLE), "小文件 4 线程足够")
-            size < 20L * 1024 * 1024 -> P(DownloadStrategy.T8, listOf(DownloadStrategy.T16, DownloadStrategy.RESUME), "中等文件 8 线程均衡")
-            size < 200L * 1024 * 1024 -> P(DownloadStrategy.T16, listOf(DownloadStrategy.T32, DownloadStrategy.RESUME), "大文件 16 线程加速")
-            else -> P(DownloadStrategy.T32, listOf(DownloadStrategy.T16, DownloadStrategy.MIRROR), "超大文件 32 线程跑满带宽")
+            size < 2L * 1024 * 1024 -> P(DownloadStrategy.T4,
+                listOf(DownloadStrategy.FAST_PROBE, DownloadStrategy.SINGLE), "小文件 4 线程足够")
+            size < 20L * 1024 * 1024 -> P(DownloadStrategy.ADAPTIVE,
+                listOf(DownloadStrategy.T8, DownloadStrategy.T16), "中等文件自适应线程")
+            size < 200L * 1024 * 1024 -> P(DownloadStrategy.T16,
+                listOf(DownloadStrategy.ADAPTIVE, DownloadStrategy.T32), "大文件 16 线程加速")
+            else -> P(DownloadStrategy.T32,
+                listOf(DownloadStrategy.T64, DownloadStrategy.ADAPTIVE), "超大文件 32 线程跑满带宽")
         }
     }
 }

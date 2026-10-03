@@ -34,9 +34,9 @@ object CommandDownloader {
         run(ctx, t, DownloadStrategy.T32)
     }
     fun directDownload(url: String, ctx: Context) {
-        val t = DownloadTask(url = url, strategy = DownloadStrategy.T32)
+        val t = DownloadTask(url = url, strategy = DownloadStrategy.ADAPTIVE)
         DownloadRepository.addTask(t)
-        run(ctx, t, DownloadStrategy.T32)
+        run(ctx, t, DownloadStrategy.ADAPTIVE)
     }
     private fun run(ctx: Context, task: DownloadTask, s: DownloadStrategy) {
         task.status = DownloadTask.Status.RUNNING
@@ -45,7 +45,9 @@ object CommandDownloader {
         val dir = File(ctx.getExternalFilesDir(null) ?: ctx.filesDir, "downloads")
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val f = SmartDownloader.download(task.url, dir, s, task.referer) { d, total, speed ->
+                val f = SmartDownloader.download(
+                    task.url, dir, s, task.referer, task.mirrors
+                ) { d, total, speed ->
                     task.downloadedBytes = d
                     if (total > 0) task.totalBytes = total
                     task.speedBytesPerSec = speed

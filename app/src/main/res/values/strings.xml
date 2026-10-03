@@ -5,14 +5,20 @@
     <string name="nav_download">任务</string>
     <string name="nav_browser">浏览</string>
     <string name="nav_settings">设置</string>
-    <string name="hint_url">把链接粘进来，一键搞定</string>
+    <string name="hint_url">把链接粘进来</string>
     <string name="btn_oneclick">一键极速下载</string>
-    <string name="btn_analyze">先看看是什么</string>
+    <string name="btn_analyze">先分析是什么</string>
     <string name="title_home">下载工具</string>
-    <string name="subtitle_home">粘贴 → 自动挑最快线路 → 开跑</string>
+    <string name="subtitle_home">粘贴 · 自动挑最快线路 · 开跑</string>
     <string name="settings_bg">图片背景轮播</string>
     <string name="settings_bg_freq">轮播间隔</string>
     <string name="settings_music">背景音乐</string>
     <string name="settings_clipboard">监听剪贴板链接</string>
     <string name="music_idle">暂无音乐</string>
+    <string name="label_new_task">新任务</string>
+    <string name="label_music">背景音乐</string>
+    <string name="label_search">搜索任务</string>
+    <string name="label_sniff">抓取本页</string>
+    <string name="label_empty">还没有任务</string>
+    <string name="label_empty_hint">粘个链接就能开跑</string>
 </resources>

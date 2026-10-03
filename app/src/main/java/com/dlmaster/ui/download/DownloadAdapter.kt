@@ -12,6 +12,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.dlmaster.R
+import com.dlmaster.anim.Anim
 import com.dlmaster.download.DownloadTask
 import com.dlmaster.util.FileSizeFormatter
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -48,6 +49,7 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
         }
         h.action.setOnClickListener { if (t.status == DownloadTask.Status.DONE) tryInstall(it.context, t) }
         h.itemView.setOnLongClickListener { showMenu(it.context, t); true }
+        Anim.itemEnter(h.itemView, pos)
     }
     private fun showMenu(ctx: Context, t: DownloadTask) {
         val opts = arrayOf("复制链接", if (t.status == DownloadTask.Status.DONE) "安装" else "删除")
@@ -72,5 +74,7 @@ class DownloadAdapter(private val items: MutableList<DownloadTask>) : RecyclerVi
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         ctx.startActivity(i)
-    } catch (e: Throwable) { Toast.makeText(ctx, "打不开安装: ${e.message}", Toast.LENGTH_SHORT).show() }
+    } catch (e: Throwable) {
+        Toast.makeText(ctx, "打不开安装: ${e.message}", Toast.LENGTH_SHORT).show()
+    }
 }

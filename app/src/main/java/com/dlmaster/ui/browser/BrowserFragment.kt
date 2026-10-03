@@ -26,6 +26,7 @@ import com.dlmaster.download.DownloadRepository
 import com.dlmaster.sniffer.WebSniffer
 import com.dlmaster.ui.home.SniffAdapter
 import com.dlmaster.util.CommandDownloader
+import com.dlmaster.util.RvOptimizer
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 
@@ -48,23 +49,16 @@ class BrowserFragment : Fragment() {
         progressBar = v.findViewById(R.id.web_progress)
         val wv = v.findViewById<WebView>(R.id.web_view)
         webView = wv
-
         try {
             wv.settings.apply {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                databaseEnabled = true
+                javaScriptEnabled = true; domStorageEnabled = true; databaseEnabled = true
                 cacheMode = WebSettings.LOAD_DEFAULT
-                useWideViewPort = true
-                loadWithOverviewMode = true
-                builtInZoomControls = true
-                displayZoomControls = false
+                useWideViewPort = true; loadWithOverviewMode = true
+                builtInZoomControls = true; displayZoomControls = false
                 userAgentString = "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36"
             }
             val sn = WebSniffer(wv)
             sniffer = sn
-
-            // 统一 WebViewClient(不再被嗅探器覆盖)
             wv.webViewClient = object : WebViewClient() {
                 override fun onPageStarted(view: WebView?, url: String?, f: Bitmap?) {
                     errLayout?.visibility = View.GONE
@@ -74,7 +68,6 @@ class BrowserFragment : Fragment() {
                 override fun onPageFinished(view: WebView?, url: String?) {
                     progressBar?.visibility = View.GONE
                     etUrl?.setText(url)
-                    // 页面加载完后自动扫一次,把可下资源塞进 Repository
                     sn.scanDom { list -> list.forEach { DownloadRepository.addSniffed(it) } }
                 }
                 override fun onReceivedError(view: WebView?, req: WebResourceRequest?, e: WebResourceError?) {
@@ -92,7 +85,6 @@ class BrowserFragment : Fragment() {
             }
             wv.loadUrl("https://www.bing.com")
         } catch (_: Throwable) {}
-
         v.findViewById<ImageButton>(R.id.btn_back).setOnClickListener { if (wv.canGoBack()) wv.goBack() }
         v.findViewById<ImageButton>(R.id.btn_forward).setOnClickListener { if (wv.canGoForward()) wv.goForward() }
         v.findViewById<ImageButton>(R.id.btn_refresh).setOnClickListener { wv.reload() }
@@ -133,12 +125,14 @@ class BrowserFragment : Fragment() {
         dlg.setView(root)
         root.findViewById<TextView>(R.id.tv_sniff_count).text = "共 ${list.size} 个资源，点一条直接开跑"
         val rv = root.findViewById<RecyclerView>(R.id.rv_sniff)
+        RvOptimizer.config(rv, requireContext())
         rv.layoutManager = LinearLayoutManager(requireContext())
-        rv.itemAnimator = null
         rv.adapter = SniffAdapter(list) { url ->
             CommandDownloader.sniffDownload(requireContext(), url)
             dlg.dismiss()
-            (activity as? MainActivity)?.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)?.selectedItemId = R.id.nav_download
+            (activity as? MainActivity)
+                ?.findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
+                ?.selectedItemId = R.id.nav_download
         }
         root.findViewById<MaterialButton>(R.id.btn_sniff_close).setOnClickListener { dlg.dismiss() }
         dlg.show()
