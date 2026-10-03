@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_marginBottom="6dp">
+
+    <LinearLayout android:id="@+id/strategy_box"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="12dp"
+        android:background="@drawable/strategy_item_bg">
+
+        <TextView android:id="@+id/tv_s_name"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:textColor="@color/dialog_text" android:textSize="13sp" android:textStyle="bold" />
+
+        <TextView android:id="@+id/tv_s_desc"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/dialog_text_2" android:textSize="11sp" />
+    </LinearLayout>
+</FrameLayout>

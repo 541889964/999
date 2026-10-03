@@ -3,47 +3,34 @@ import android.content.Context
 import android.media.MediaPlayer
 import java.io.File
 import kotlin.random.Random
-
 object MusicPlayer {
-
-    private const val MUSIC_DIR = "/storage/emulated/0/Music/玄音"
-    private val EXTS = setOf("mp3", "m4a", "flac", "ogg", "wav", "aac", "wma")
-
+    private val DIRS = arrayOf("/storage/emulated/0/Music/玄音","/storage/emulated/0/Music","/storage/emulated/0/Download")
+    private val EXTS = setOf("mp3","m4a","flac","ogg","wav","aac","wma")
     private var player: MediaPlayer? = null
     private var tracks: List<File> = emptyList()
     private var currentIndex = -1
-    private var appCtx: Context? = null
-
     fun start(ctx: Context) {
-        appCtx = ctx.applicationContext
         if (tracks.isEmpty()) rescan(ctx)
         if (tracks.isEmpty()) return
-        if (player == null) playRandom(ctx)
+        if (player == null) playRandom()
     }
-
     fun rescan(ctx: Context) {
-        tracks = scan(File(MUSIC_DIR))
+        val list = mutableListOf<File>()
+        for (d in DIRS) {
+            val dir = File(d)
+            if (dir.exists() && dir.isDirectory) try {
+                dir.listFiles { f -> f.isFile && f.extension.lowercase() in EXTS }?.let { list.addAll(it) }
+            } catch (_: Throwable) {}
+        }
+        tracks = list
     }
-
-    fun next(ctx: Context) {
-        playRandom(ctx.applicationContext)
-    }
-
+    fun next(ctx: Context) { playRandom() }
     fun pause() { try { player?.takeIf { it.isPlaying }?.pause() } catch (_: Throwable) {} }
     fun resume() { try { player?.start() } catch (_: Throwable) {} }
-    fun isPlaying(): Boolean = try { player?.isPlaying == true } catch (_: Throwable) { false }
-
-    fun currentTrackName(): String? {
-        if (currentIndex in tracks.indices) return tracks[currentIndex].nameWithoutExtension
-        return null
-    }
-
-    fun stop() {
-        try { player?.stop(); player?.release() } catch (_: Throwable) {}
-        player = null
-    }
-
-    private fun playRandom(ctx: Context) {
+    fun isPlaying() = try { player?.isPlaying == true } catch (_: Throwable) { false }
+    fun currentTrackName(): String? = if (currentIndex in tracks.indices) tracks[currentIndex].nameWithoutExtension else null
+    fun stop() { try { player?.stop(); player?.release() } catch (_: Throwable) {}; player = null }
+    private fun playRandom() {
         if (tracks.isEmpty()) return
         val idx: Int = if (tracks.size == 1) 0 else {
             var n: Int
@@ -55,22 +42,11 @@ object MusicPlayer {
         try {
             player = MediaPlayer().apply {
                 setDataSource(tracks[idx].absolutePath)
-                setOnCompletionListener { playRandom(ctx) }
+                setOnCompletionListener { playRandom() }
                 setOnErrorListener { _, _, _ -> true }
                 setVolume(0.7f, 0.7f)
-                prepare()
-                start()
+                prepare(); start()
             }
-        } catch (_: Throwable) {
-            player = null
-        }
-    }
-
-    private fun scan(dir: File): List<File> {
-        if (!dir.exists() || !dir.isDirectory) return emptyList()
-        val direct = try {
-            dir.listFiles { f -> f.isFile && f.extension.lowercase() in EXTS }?.toList() ?: emptyList()
-        } catch (_: Throwable) { emptyList() }
-        return direct
+        } catch (_: Throwable) { player = null }
     }
 }

@@ -1,52 +1,74 @@
 package com.dlmaster.util
 import android.content.Context
+import com.dlmaster.download.AnalyzeResult
 import com.dlmaster.download.DownloadRepository
+import com.dlmaster.download.DownloadStrategy
 import com.dlmaster.download.DownloadTask
-import com.dlmaster.download.MultiThreadDownloader
-import com.dlmaster.netdisk.NetdiskResolver
-import com.dlmaster.sniffer.ThunderParser
+import com.dlmaster.download.SmartAnalyzer
+import com.dlmaster.download.SmartDownloader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+
 object CommandDownloader {
-    fun smartDownload(input: String, ctx: Context) {
-        try {
-            val url = when {
-                ThunderParser.isThunder(input) -> ThunderParser.parse(input) ?: return
-                input.startsWith("magnet:") -> input
-                NetdiskResolver.isNetdiskLink(input) -> input
-                input.startsWith("http", true) -> if (looksLikePage(input)) return else input
-                else -> return
-            }
-            start(ctx, url, 8)
-        } catch (_: Throwable) {}
+
+    fun startWithAnalysis(ctx: Context, r: AnalyzeResult, strategy: DownloadStrategy) {
+        val t = DownloadTask(
+            url = r.resolved,
+            fileName = r.fileName,
+            strategy = strategy,
+            referer = if (strategy == DownloadStrategy.STEALTH) "https://www.google.com/" else null
+        )
+        DownloadRepository.addTask(t)
+        run(ctx, t, strategy)
     }
+
+    /** 直接智能下载：先分析，再用推荐方案 */
+    fun smartAnalyzeAndDownload(ctx: Context, url: String, scope: CoroutineScope, cb: (AnalyzeResult?) -> Unit) {
+        scope.launch {
+            val r = try { SmartAnalyzer.analyze(url) } catch (_: Throwable) { null }
+            cb(r)
+            if (r != null) startWithAnalysis(ctx, r, r.best)
+        }
+    }
+
+    /** 直接极速下载：跳过分析，走 32 线程 */
     fun directDownload(url: String, ctx: Context) {
-        try { start(ctx, url, 16) } catch (_: Throwable) {}
+        val t = DownloadTask(url = url, strategy = DownloadStrategy.T32)
+        DownloadRepository.addTask(t)
+        run(ctx, t, DownloadStrategy.T32)
     }
-    private fun start(ctx: Context, url: String, threads: Int) {
-        val task = DownloadTask(url = url)
+
+    private fun run(ctx: Context, task: DownloadTask, strategy: DownloadStrategy) {
         task.status = DownloadTask.Status.RUNNING
-        DownloadRepository.addTask(task)
+        DownloadRepository.notifyUpdate()
+        DownloadNotifier.ensure(ctx)
         val dir = File(ctx.getExternalFilesDir(null) ?: ctx.filesDir, "downloads")
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val f = MultiThreadDownloader.download(url, dir, threads) { d, t ->
+                val f = SmartDownloader.download(task.url, dir, strategy, task.referer) { d, total, speed ->
                     task.downloadedBytes = d
-                    if (t > 0) task.totalBytes = t
+                    if (total > 0) task.totalBytes = total
+                    task.speedBytesPerSec = speed
+                    DownloadNotifier.update(ctx, task)
+                    DownloadRepository.notifyUpdate()
                 }
-                if (f != null) {
+                if (f != null && f.exists()) {
                     task.fileName = f.name
+                    task.savedPath = f.absolutePath
                     task.status = DownloadTask.Status.DONE
-                } else task.status = DownloadTask.Status.FAILED
-            } catch (_: Throwable) { task.status = DownloadTask.Status.FAILED }
+                    DownloadNotifier.complete(ctx, task)
+                } else {
+                    task.status = DownloadTask.Status.FAILED
+                    DownloadNotifier.fail(ctx, task)
+                }
+                DownloadRepository.notifyUpdate()
+            } catch (_: Throwable) {
+                task.status = DownloadTask.Status.FAILED
+                DownloadRepository.notifyUpdate()
+                DownloadNotifier.fail(ctx, task)
+            }
         }
-    }
-    private fun looksLikePage(url: String): Boolean {
-        val p = url.substringAfter("://").substringAfter('/', "")
-        return p.isEmpty() || p.endsWith(".html") || p.endsWith(".php") ||
-                p.endsWith(".asp") || p.endsWith(".jsp") ||
-                !p.substringAfterLast('/').contains(".")
     }
 }

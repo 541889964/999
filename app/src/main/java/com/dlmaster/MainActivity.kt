@@ -21,34 +21,25 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var bg: ImageView
     private val bgHandler = Handler(Looper.getMainLooper())
     private var currentBgIndex = -1
     private var bgIds: IntArray = intArrayOf()
-
+    private var paused = false
     private val bgSwitchRunnable = object : Runnable {
         override fun run() {
+            if (paused) return
             switchNextBg()
-            bgHandler.postDelayed(this, BG_INTERVAL_MS)
+            bgHandler.postDelayed(this, Prefs.bgIntervalMs(this@MainActivity))
         }
     }
-
-    companion object {
-        private const val BG_INTERVAL_MS = 10_000L
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         bgIds = BackgroundList.RES_IDS
         bg = findViewById(R.id.iv_background)
-
-        PermissionHelper.requestAudio(this)
-        if (Prefs.musicEnabled(this)) {
-            MusicPlayer.start(applicationContext)
-        }
-
+        PermissionHelper.requestNotifications(this)
+        if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
         val nav = findViewById<BottomNavigationView>(R.id.bottom_nav)
         nav.setOnItemSelectedListener { item ->
             val f: Fragment = when (item.itemId) {
@@ -67,26 +58,19 @@ class MainActivity : AppCompatActivity() {
         }
         if (savedInstanceState == null) nav.selectedItemId = R.id.nav_home
     }
-
     override fun onResume() {
-        super.onResume()
+        super.onResume(); paused = false
         if (Prefs.bgEnabled(this)) {
             bgHandler.removeCallbacks(bgSwitchRunnable)
             switchNextBg()
-            bgHandler.postDelayed(bgSwitchRunnable, BG_INTERVAL_MS)
-        } else {
-            bg.setImageDrawable(null)
-        }
-        if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) {
-            MusicPlayer.start(applicationContext)
-        }
+            bgHandler.postDelayed(bgSwitchRunnable, Prefs.bgIntervalMs(this))
+        } else bg.setImageDrawable(null)
+        if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) MusicPlayer.start(applicationContext)
     }
-
     override fun onPause() {
-        super.onPause()
+        super.onPause(); paused = true
         bgHandler.removeCallbacks(bgSwitchRunnable)
     }
-
     private fun switchNextBg() {
         if (bgIds.isEmpty()) return
         if (!Prefs.bgEnabled(this)) { bg.setImageDrawable(null); return }
@@ -99,16 +83,15 @@ class MainActivity : AppCompatActivity() {
         try {
             Glide.with(applicationContext)
                 .load(bgIds[next])
-                .transition(DrawableTransitionOptions.withCrossFade(800))
+                .transition(DrawableTransitionOptions.withCrossFade(1000))
                 .centerCrop()
                 .format(DecodeFormat.PREFER_RGB_565)
-                .override(720, 1280)
+                .override(900, 1600)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .skipMemoryCache(false)
                 .into(bg)
         } catch (_: Throwable) {}
     }
-
     override fun onDestroy() {
         super.onDestroy()
         bgHandler.removeCallbacks(bgSwitchRunnable)

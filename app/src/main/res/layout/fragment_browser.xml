@@ -1,10 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
-    <WebView
-        android:id="@+id/web_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <WebView android:id="@+id/web_view" android:layout_width="match_parent" android:layout_height="match_parent" />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_gravity="top" android:layout_margin="10dp" android:padding="6dp"
+        android:background="@drawable/nav_bg" android:elevation="12dp"
+        android:orientation="horizontal" android:gravity="center_vertical">
+        <EditText android:id="@+id/et_web_url" android:layout_width="0dp" android:layout_height="44dp"
+            android:layout_weight="1" android:background="@null"
+            android:paddingStart="12dp" android:paddingEnd="12dp"
+            android:hint="搜索或输入网址" android:textSize="14sp"
+            android:inputType="textUri" android:imeOptions="actionGo" android:maxLines="1" />
+        <ImageButton android:id="@+id/btn_web_go" android:layout_width="44dp" android:layout_height="44dp"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_search" android:contentDescription="搜索" />
+    </LinearLayout>
+
+    <FrameLayout android:id="@+id/web_error" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="#CC000000" android:visibility="gone">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="center" android:orientation="vertical" android:gravity="center">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="加载失败" android:textColor="@color/white"
+                android:textSize="18sp" android:textStyle="bold" />
+            <TextView android:id="@+id/tv_web_err_msg" android:layout_width="260dp" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:gravity="center"
+                android:textColor="#CCFFFFFF" android:textSize="12sp" />
+        </LinearLayout>
+    </FrameLayout>
 </FrameLayout>

@@ -3,12 +3,19 @@
     <color name="primary">#FF4F7CFF</color>
     <color name="primary_dark">#FF2A5CD9</color>
     <color name="accent">#FF00E0C6</color>
-    <color name="bg">#FFF0F4FA</color>
+    <color name="bg">#FF000000</color>
     <color name="surface">#FFFFFFFF</color>
     <color name="on_surface">#FF1C1F26</color>
     <color name="on_surface_2">#FF6B7280</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="scrim_top">#B3000000</color>
-    <color name="scrim_bottom">#CC000000</color>
-    <color name="card_bg">#F2FFFFFF</color>
+    <color name="nav_tint">#FF4F7CFF</color>
+    <color name="card_a">#B3FFFFFF</color>
+    <color name="card_b">#99FFFFFF</color>
+    <color name="ripple">#33000000</color>
+    <color name="dialog_bg">#F2151A25</color>
+    <color name="dialog_stroke">#33FFFFFF</color>
+    <color name="dialog_text">#FFE9EDF5</color>
+    <color name="dialog_text_2">#FF8C94A8</color>
+    <color name="dialog_accent">#FF52C7FF</color>
+    <color name="dialog_glow">#3352C7FF</color>
 </resources>

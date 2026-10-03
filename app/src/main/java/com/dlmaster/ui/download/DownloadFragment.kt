@@ -10,21 +10,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dlmaster.R
 import com.dlmaster.download.DownloadRepository
 class DownloadFragment : Fragment() {
-    private lateinit var adapter: DownloadAdapter
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+    private var adapter: DownloadAdapter? = null
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, s: Bundle?): View =
         inflater.inflate(R.layout.fragment_download, container, false)
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, s: Bundle?) {
         val rv = view.findViewById<RecyclerView>(R.id.rv_downloads)
         val empty = view.findViewById<TextView>(R.id.tv_empty)
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.setHasFixedSize(true)
-        rv.itemAnimator = null
         adapter = DownloadAdapter(DownloadRepository.tasks)
         rv.adapter = adapter
+        DownloadRepository.live.observe(viewLifecycleOwner) {
+            adapter?.notifyDataSetChanged()
+            empty.visibility = if (DownloadRepository.tasks.isEmpty()) View.VISIBLE else View.GONE
+        }
         empty.visibility = if (DownloadRepository.tasks.isEmpty()) View.VISIBLE else View.GONE
-    }
-    override fun onResume() {
-        super.onResume()
-        try { adapter.notifyDataSetChanged() } catch (_: Throwable) {}
     }
 }

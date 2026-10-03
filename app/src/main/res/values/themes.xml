@@ -8,9 +8,22 @@
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:statusBarColor" tools:targetApi="l">#66000000</item>
+        <item name="android:navigationBarColor" tools:targetApi="l">#66000000</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowAnimationStyle">@style/WindowAnim</item>
     </style>
     <style name="SplashTheme" parent="AppTheme">
         <item name="android:windowBackground">@color/primary</item>
+    </style>
+    <style name="WindowAnim" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/slide_out_left</item>
+        <item name="android:activityCloseEnterAnimation">@anim/slide_in_left</item>
+        <item name="android:activityCloseExitAnimation">@anim/slide_out_right</item>
+    </style>
+    <style name="DialogTheme" parent="Theme.MaterialComponents.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimAmount">0.55</item>
     </style>
 </resources>

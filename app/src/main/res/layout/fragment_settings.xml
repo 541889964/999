@@ -2,81 +2,59 @@
 <androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/m">
+    android:layout_width="match_parent" android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="@dimen/m" android:paddingBottom="100dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            android:text="设置"
-            android:textColor="@color/white"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:shadowColor="#B3000000"
-            android:shadowDx="0"
-            android:shadowDy="2"
-            android:shadowRadius="6" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="44dp" android:text="设置"
+            android:textColor="@color/white" android:textSize="30sp" android:textStyle="bold"
+            android:shadowColor="#CC000000" android:shadowDx="0" android:shadowDy="2" android:shadowRadius="8" />
 
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardCornerRadius="@dimen/radius"
-            app:cardBackgroundColor="@color/card_bg"
-            app:cardElevation="4dp">
+            app:cardCornerRadius="@dimen/radius" app:cardBackgroundColor="@color/card_a"
+            app:cardElevation="6dp" app:strokeColor="#33FFFFFF" app:strokeWidth="0.5dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="@dimen/m">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/m">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/settings_bg"
-                        android:textColor="@color/on_surface"
-                        android:textSize="16sp" />
-                    <Switch
-                        android:id="@+id/sw_bg"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="@string/settings_bg"
+                        android:textColor="@color/on_surface" android:textSize="15sp" />
+                    <Switch android:id="@+id/sw_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                 </LinearLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/m"
-                    android:background="#14000000" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" android:text="@string/settings_bg_freq"
+                    android:textColor="@color/on_surface_2" android:textSize="12sp" />
+                <SeekBar android:id="@+id/sb_freq" android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:max="5" android:progress="2" />
+                <TextView android:id="@+id/tv_freq" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="10 秒" android:textColor="@color/primary" android:textSize="12sp" android:textStyle="bold" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="@string/settings_music"
-                        android:textColor="@color/on_surface"
-                        android:textSize="16sp" />
-                    <Switch
-                        android:id="@+id/sw_music"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/m" android:background="#14000000" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="@string/settings_music"
+                        android:textColor="@color/on_surface" android:textSize="15sp" />
+                    <Switch android:id="@+id/sw_music" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/m" android:background="#14000000" />
+
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="horizontal" android:gravity="center_vertical">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_weight="1" android:text="@string/settings_translucent"
+                        android:textColor="@color/on_surface" android:textSize="15sp" />
+                    <Switch android:id="@+id/sw_trans" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
