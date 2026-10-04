@@ -6,11 +6,14 @@
     <com.dlmaster.view.AuroraBackgroundView android:id="@+id/aurora"
         android:layout_width="match_parent" android:layout_height="match_parent" />
     <ImageView android:id="@+id/iv_bg1" android:layout_width="match_parent" android:layout_height="match_parent"
-        android:scaleType="centerCrop" android:alpha="0.35" android:contentDescription="@null" />
+        android:scaleType="centerCrop" android:alpha="0.55" android:contentDescription="@null" />
     <ImageView android:id="@+id/iv_bg2" android:layout_width="match_parent" android:layout_height="match_parent"
         android:scaleType="centerCrop" android:alpha="0" android:contentDescription="@null" />
     <View android:layout_width="match_parent" android:layout_height="match_parent"
         android:background="@drawable/scrim_gradient" />
+    <com.dlmaster.view.ParticleView android:id="@+id/particles"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:alpha="0.7" />
     <androidx.fragment.app.FragmentContainerView android:id="@+id/fragment_container"
         android:layout_width="match_parent" android:layout_height="match_parent"
         android:layout_marginBottom="@dimen/bottom_nav_h" />

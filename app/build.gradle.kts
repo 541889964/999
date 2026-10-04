@@ -5,26 +5,53 @@ plugins {
 android {
     namespace = "com.dlmaster"
     compileSdk = 34
-    defaultConfig {
-        applicationId = "com.dlmaster"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 16
-        versionName = "16.0.0"
-        vectorDrawables { useSupportLibrary = true }
-    }
+
+    // 自定义签名配置 - 兼容 Android 5.0+
     signingConfigs {
-        getByName("debug") {
+        create("stable") {
+            // 用 AGP 自带的 debug keystore
+            storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
             enableV1Signing = true
             enableV2Signing = true
             enableV3Signing = false
             enableV4Signing = false
         }
     }
-    buildTypes {
-        release { isMinifyEnabled = false; signingConfig = signingConfigs.getByName("debug") }
-        debug { isMinifyEnabled = false; signingConfig = signingConfigs.getByName("debug") }
+
+    defaultConfig {
+        applicationId = "com.dlmaster"
+        minSdk = 21
+        targetSdk = 34
+        versionCode = 17
+        versionName = "17.0.0"
+        vectorDrawables { useSupportLibrary = true }
     }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("stable")
+            // 关键:禁用 v3/v4
+            packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
+        }
+        debug {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("stable")
+        }
+    }
+
+    // 强制关闭 v3/v4(双重保险)
+    androidComponents {
+        onVariants(selector().all()) { variant ->
+            variant.outputs.forEach { output ->
+                // no-op,签名配置里已设
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

@@ -22,11 +22,13 @@ import com.dlmaster.util.MusicPlayer
 import com.dlmaster.util.PermissionHelper
 import com.dlmaster.util.Prefs
 import com.dlmaster.view.AuroraBackgroundView
+import com.dlmaster.view.ParticleView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.random.Random
 class MainActivity : AppCompatActivity() {
     private lateinit var bg1: ImageView; private lateinit var bg2: ImageView
     private lateinit var aurora: AuroraBackgroundView
+    private var particles: ParticleView? = null
     private val handler = Handler(Looper.getMainLooper())
     private var currentIdx = -1; private var ids: IntArray = intArrayOf()
     private var paused = false; private var useFirst = true; private var firstLoad = true
@@ -44,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         ids = BackgroundList.RES_IDS
         bg1 = findViewById(R.id.iv_bg1); bg2 = findViewById(R.id.iv_bg2)
         aurora = findViewById(R.id.aurora)
+        particles = findViewById(R.id.particles)
         PermissionHelper.requestNotifications(this)
         if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
         val nav = findViewById<BottomNavigationView>(R.id.bottom_nav)
@@ -66,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         if (!Prefs.noticeShown(this)) handler.postDelayed({ showNotice() }, 1000)
     }
     override fun onResume() {
-        super.onResume(); paused = false; aurora.resume()
+        super.onResume(); paused = false; aurora.resume(); particles?.resume()
         if (Prefs.bgEnabled(this)) {
             handler.removeCallbacks(runnable); switchBg()
             handler.postDelayed(runnable, Prefs.bgIntervalMs(this))
@@ -74,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) MusicPlayer.start(applicationContext)
     }
     override fun onPause() {
-        super.onPause(); paused = true; aurora.pause()
+        super.onPause(); paused = true; aurora.pause(); particles?.pause()
         handler.removeCallbacks(runnable)
     }
     private fun switchBg() {
