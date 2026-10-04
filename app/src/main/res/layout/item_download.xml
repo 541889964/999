@@ -25,6 +25,7 @@
                 app:trackCornerRadius="2dp" app:indicatorColor="@color/primary" app:trackColor="#33FFFFFF" />
         </LinearLayout>
         <TextView android:id="@+id/tv_action" android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginStart="10dp" android:textColor="@color/primary" android:textSize="13sp" android:textStyle="bold" />
+            android:layout_marginStart="10dp" android:textColor="@color/primary"
+            android:textSize="13sp" android:textStyle="bold" />
     </LinearLayout>
 </FrameLayout>

@@ -2,14 +2,17 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="6dp">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="vertical" android:padding="12dp" android:background="@drawable/sniff_item_selector">
+        android:orientation="vertical" android:padding="12dp"
+        android:background="@drawable/sniff_item_selector">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical">
             <TextView android:id="@+id/tv_sniff_kind"
                 android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:background="@drawable/tag_bg" android:paddingStart="8dp" android:paddingEnd="8dp"
+                android:background="@drawable/tag_bg"
+                android:paddingStart="8dp" android:paddingEnd="8dp"
                 android:paddingTop="3dp" android:paddingBottom="3dp"
-                android:text="视频" android:textColor="@color/tag_video" android:textSize="10sp" android:textStyle="bold" />
+                android:text="视频" android:textColor="@color/tag_video"
+                android:textSize="10sp" android:textStyle="bold" />
             <TextView android:id="@+id/tv_sniff_name"
                 android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
                 android:layout_marginStart="8dp" android:maxLines="1" android:ellipsize="middle"

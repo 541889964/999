@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/bg">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/bg">
     <com.dlmaster.view.AuroraBackgroundView android:id="@+id/aurora"
         android:layout_width="match_parent" android:layout_height="match_parent" />
     <ImageView android:id="@+id/iv_bg1" android:layout_width="match_parent" android:layout_height="match_parent"
@@ -15,8 +16,10 @@
         android:layout_marginBottom="@dimen/bottom_nav_h" />
     <com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottom_nav"
         android:layout_width="match_parent" android:layout_height="@dimen/bottom_nav_h"
-        android:layout_gravity="bottom" android:layout_marginStart="@dimen/edge" android:layout_marginEnd="@dimen/edge"
-        android:layout_marginBottom="10dp" android:background="@drawable/nav_bg" android:elevation="10dp"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="@dimen/edge" android:layout_marginEnd="@dimen/edge"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/nav_bg" android:elevation="10dp"
         app:menu="@menu/bottom_nav_menu" app:labelVisibilityMode="labeled"
         app:itemIconTint="@color/nav_tint" app:itemTextColor="@color/nav_tint"
         app:itemRippleColor="@color/ripple" app:itemBackground="@drawable/nav_item_bg" />
