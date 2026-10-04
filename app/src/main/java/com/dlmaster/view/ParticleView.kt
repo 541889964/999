@@ -33,7 +33,7 @@ class ParticleView @JvmOverloads constructor(
     private val list = ArrayList<P>(80)
     private var w = 0f; private var h = 0f
     private var paused = false
-    private val count get() = if (w * h > 800 * 1600) 60 else 40
+    private val count get() = if (w * h > 800 * 1600) 20 else 14
 
     init { setClickable(false); setFocusable(false); setWillNotDraw(false) }
 

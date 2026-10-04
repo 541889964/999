@@ -23,6 +23,7 @@ class AuroraBackgroundView @JvmOverloads constructor(
     private var lx3 = -1f; private var ly3 = -1f; private var lr3 = -1f
     private var w = 0f; private var h = 0f
     private var paused = false
+    private var frameSkip = 0
     init { setClickable(false); setFocusable(false); setWillNotDraw(false) }
     override fun onSizeChanged(w: Int, h: Int, ow: Int, oh: Int) {
         super.onSizeChanged(w, h, ow, oh)
@@ -55,7 +56,8 @@ class AuroraBackgroundView @JvmOverloads constructor(
         g3?.let { paint.shader = it; c.drawCircle(x3, y3, r3, paint) }
         phase += 0.0025f
         if (phase > 1f) phase -= 1f
-        postInvalidateOnAnimation()
+        frameSkip = (frameSkip + 1) % 2
+        if (frameSkip == 0) postInvalidateOnAnimation() else postInvalidate()
     }
     fun pause() { paused = true }
     fun resume() { paused = false; postInvalidateOnAnimation() }

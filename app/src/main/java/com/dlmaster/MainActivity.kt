@@ -23,7 +23,7 @@ import com.dlmaster.util.PermissionHelper
 import com.dlmaster.util.Prefs
 import com.dlmaster.view.AuroraBackgroundView
 import com.dlmaster.view.ParticleView
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.dlmaster.view.SimpleNavBar
 import kotlin.random.Random
 class MainActivity : AppCompatActivity() {
     private lateinit var bg1: ImageView; private lateinit var bg2: ImageView
@@ -43,29 +43,42 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+        // 请求最高刷新率(120Hz 屏自动启用,60Hz 设备无副作用)
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                val lp = window.attributes
+                lp.preferredDisplayModeId = 0
+                lp.preferredRefreshRate = 120f
+                window.attributes = lp
+            }
+        } catch (_: Throwable) {}
         ids = BackgroundList.RES_IDS
         bg1 = findViewById(R.id.iv_bg1); bg2 = findViewById(R.id.iv_bg2)
         aurora = findViewById(R.id.aurora)
         particles = findViewById(R.id.particles)
         PermissionHelper.requestNotifications(this)
         if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
-        val nav = findViewById<BottomNavigationView>(R.id.bottom_nav)
-        nav.setOnItemSelectedListener { item ->
-            val f: Fragment = when (item.itemId) {
-                R.id.nav_home -> HomeFragment()
-                R.id.nav_download -> DownloadFragment()
-                R.id.nav_browser -> BrowserFragment()
+        val nav = findViewById<SimpleNavBar>(R.id.simple_nav)
+        nav.onTabSelected = { idx ->
+            val f: Fragment = when (idx) {
+                0 -> HomeFragment()
+                1 -> DownloadFragment()
+                2 -> BrowserFragment()
                 else -> SettingsFragment()
             }
             try {
                 supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
-                        android.R.anim.fade_in, android.R.anim.fade_out)
+                    .setCustomAnimations(
+                        R.anim.frag_in, R.anim.frag_out,
+                        R.anim.frag_in, R.anim.frag_out)
                     .replace(R.id.fragment_container, f).commitAllowingStateLoss()
             } catch (_: Throwable) {}
-            true
         }
-        if (savedInstanceState == null) nav.selectedItemId = R.id.nav_home
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, HomeFragment())
+                .commitAllowingStateLoss()
+        }
         if (!Prefs.noticeShown(this)) handler.postDelayed({ showNotice() }, 1000)
     }
     override fun onResume() {
