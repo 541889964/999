@@ -1,4 +1,5 @@
 package com.dlmaster.util
+
 import android.content.Context
 import com.dlmaster.download.AnalyzeResult
 import com.dlmaster.download.DownloadRepository
@@ -10,32 +11,60 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+
 object CommandDownloader {
+
     fun oneClick(ctx: Context, url: String, scope: CoroutineScope, cb: (AnalyzeResult?) -> Unit) {
         scope.launch {
             val r = try { SmartAnalyzer.analyze(url) } catch (_: Throwable) { null }
-            cb(r); if (r != null) launchWith(ctx, r, r.best)
+            cb(r)
+            if (r != null && !r.isPage) launchWith(ctx, r, r.best)
         }
     }
+
     fun launchWith(ctx: Context, r: AnalyzeResult, s: DownloadStrategy) {
-        val t = DownloadTask(url = r.resolved, fileName = r.fileName, strategy = s,
-            referer = if (s == DownloadStrategy.STEALTH) "https://www.google.com/" else null)
-        DownloadRepository.addTask(t); run(ctx, t, s)
+        val t = DownloadTask(
+            url = r.resolved,
+            fileName = r.fileName,
+            strategy = s,
+            referer = if (s == DownloadStrategy.STEALTH) r.original else null
+        )
+        DownloadRepository.addTask(t)
+        run(ctx, t, s)
     }
-    /** 从嗅探结果直接开跑 */
-    fun fromSniffed(ctx: Context, url: String, fileName: String, referer: String?, strategy: DownloadStrategy = DownloadStrategy.T32) {
+
+    fun fromSniffed(
+        ctx: Context,
+        url: String,
+        fileName: String,
+        referer: String?,
+        strategy: DownloadStrategy = DownloadStrategy.T32
+    ) {
         val t = DownloadTask(url = url, fileName = fileName, strategy = strategy, referer = referer)
-        DownloadRepository.addTask(t); run(ctx, t, strategy)
+        DownloadRepository.addTask(t)
+        run(ctx, t, strategy)
     }
-    fun sniffDownload(ctx: Context, url: String) {
-        val name = url.substringAfterLast('/').substringBefore('?').ifBlank { "download.bin" }
-        val t = DownloadTask(url = url, fileName = name, strategy = DownloadStrategy.T32)
-        DownloadRepository.addTask(t); run(ctx, t, DownloadStrategy.T32)
-    }
+
     fun directDownload(url: String, ctx: Context) {
         val t = DownloadTask(url = url, strategy = DownloadStrategy.ADAPTIVE)
-        DownloadRepository.addTask(t); run(ctx, t, DownloadStrategy.ADAPTIVE)
+        DownloadRepository.addTask(t)
+        run(ctx, t, DownloadStrategy.ADAPTIVE)
     }
+
+    /** 智能粘贴 —— 补齐协议头 */
+    fun smartPaste(ctx: Context, text: String): String {
+        val t = text.trim()
+        return when {
+            t.startsWith("http") -> t
+            t.startsWith("magnet:") -> t
+            t.startsWith("thunder://") -> t
+            t.startsWith("ftp://") -> t
+            t.startsWith("//") -> "https:$t"
+            t.contains(".") && !t.contains(" ") -> "https://$t"
+            else -> t
+        }
+    }
+
     private fun run(ctx: Context, task: DownloadTask, s: DownloadStrategy) {
         task.status = DownloadTask.Status.RUNNING
         DownloadRepository.notifyUpdate()
@@ -51,8 +80,10 @@ object CommandDownloader {
                     DownloadRepository.notifyUpdate()
                 }
                 if (f != null && f.exists()) {
-                    task.fileName = f.name; task.savedPath = f.absolutePath
+                    task.fileName = f.name
+                    task.savedPath = f.absolutePath
                     task.status = DownloadTask.Status.DONE
+                    task.finishedAt = System.currentTimeMillis()
                     DownloadNotifier.complete(ctx, task)
                 } else {
                     task.status = DownloadTask.Status.FAILED
