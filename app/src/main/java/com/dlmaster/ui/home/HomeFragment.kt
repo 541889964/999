@@ -23,6 +23,7 @@ import com.dlmaster.download.DownloadStrategy
 import com.dlmaster.download.SmartAnalyzer
 import com.dlmaster.sniffer.SniffRepository
 import com.dlmaster.sniffer.SniffedResource
+import com.dlmaster.sniffer.WebViewSniffer
 import com.dlmaster.sniffer.WebPageSniffer
 import com.dlmaster.ui.download.DownloadAdapter
 import com.dlmaster.util.CommandDownloader
@@ -159,18 +160,52 @@ class HomeFragment : Fragment() {
 
         // 启动端到端嗅探
         lifecycleScope.launch {
-            WebPageSniffer.sniff(
-                pageUrl = pageUrl,
-                onProgress = { stage, cur, total ->
-                    when (stage) {
-                        "fetch" -> tvCount.text = if (cur == 0) "正在拉取网页…" else "网页已到手"
-                        "parse" -> tvCount.text = "正在解析…"
-                        "probe" -> {
-                            val pct = if (total > 0) (cur * 100 / total) else 0
-                            progress.progress = pct
-                            tvCount.text = "探测中 $cur/$total"
-                        }
-                    }
+            scanWithWebView(pageUrl, dlg, tvTitle, tvCount, progress, rv, live)
+            }
+        }
+    }
+
+    private fun scanWithWebView(
+        pageUrl: String,
+        dlg: androidx.appcompat.app.AlertDialog,
+        tvTitle: TextView,
+        tvCount: TextView,
+        progress: ProgressBar,
+        rv: RecyclerView,
+        live: ArrayList<SniffedResource>
+    ) {
+        val sniffer = WebViewSniffer(requireContext().applicationContext)
+        var lastUpdate = System.currentTimeMillis()
+        sniffer.load(pageUrl) { resources ->
+            // WebView 完成
+            try {
+                if (resources.isEmpty()) {
+                    tvTitle.text = "没找到可下载的"
+                    tvCount.text = "试试换个页面"
+                } else {
+                    live.clear()
+                    live.addAll(resources)
+                    rv.adapter?.notifyDataSetChanged()
+                    tvTitle.text = "发现了 ${resources.size} 个可下载的"
+                    tvCount.text = getString(com.dlmaster.R.string.sniff_sub)
+                    // 存入历史
+                    SniffRepository.addAll(resources)
+                }
+                progress.visibility = View.GONE
+            } catch (_: Throwable) {}
+        }
+        // 30 秒超时保护
+        view?.postDelayed({
+            try {
+                if (progress.visibility == View.VISIBLE) {
+                    progress.visibility = View.GONE
+                    tvTitle.text = "扫描超时"
+                    tvCount.text = "页面可能太复杂，试试直接复制链接"
+                    sniffer.destroy()
+                }
+            } catch (_: Throwable) {}
+        }, 30000)
+    }
                 },
                 onResource = { r ->
                     // 每探测完一个就上列表(实时)
