@@ -9,8 +9,8 @@ android {
         applicationId = "com.dlmaster"
         minSdk = 21
         targetSdk = 34
-        versionCode = 40
-        versionName = "40.0.0"
+        versionCode = 42
+        versionName = "42.0.0"
         vectorDrawables { useSupportLibrary = true }
     }
     signingConfigs {
