@@ -23,8 +23,8 @@
             </LinearLayout>
         </LinearLayout>
 
-        <ScrollView android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" android:maxHeight="440dp"
+        <ScrollView android:layout_width="match_parent" android:layout_height="360dp"
+            android:layout_marginTop="16dp"
             android:overScrollMode="never" android:scrollbars="none">
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:textColor="@color/txt_primary" android:textSize="13sp"

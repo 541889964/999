@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                 dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
                 dlg.window?.setWindowAnimations(R.style.DialogAnim)
                 val dm = resources.displayMetrics
-                dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), -2)
+                dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), (dm.heightPixels * 0.82).toInt())
             } catch (_: Throwable) {}
         } catch (_: Throwable) {}
     }

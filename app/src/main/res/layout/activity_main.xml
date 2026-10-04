@@ -3,27 +3,43 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:background="@color/bg">
+
     <com.dlmaster.view.AuroraBackgroundView android:id="@+id/aurora"
         android:layout_width="match_parent" android:layout_height="match_parent" />
-    <ImageView android:id="@+id/iv_bg1" android:layout_width="match_parent" android:layout_height="match_parent"
-        android:scaleType="centerCrop" android:alpha="0.55" android:contentDescription="@null" />
-    <ImageView android:id="@+id/iv_bg2" android:layout_width="match_parent" android:layout_height="match_parent"
+
+    <ImageView android:id="@+id/iv_bg1"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:scaleType="centerCrop" android:alpha="0.65" android:contentDescription="@null" />
+    <ImageView android:id="@+id/iv_bg2"
+        android:layout_width="match_parent" android:layout_height="match_parent"
         android:scaleType="centerCrop" android:alpha="0" android:contentDescription="@null" />
+
     <View android:layout_width="match_parent" android:layout_height="match_parent"
         android:background="@drawable/scrim_gradient" />
+
     <com.dlmaster.view.ParticleView android:id="@+id/particles"
         android:layout_width="match_parent" android:layout_height="match_parent"
-        android:alpha="0.7" />
+        android:alpha="0.55" />
+
     <androidx.fragment.app.FragmentContainerView android:id="@+id/fragment_container"
         android:layout_width="match_parent" android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/bottom_nav_h" />
-    <com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottom_nav"
-        android:layout_width="match_parent" android:layout_height="@dimen/bottom_nav_h"
+        android:layout_marginBottom="82dp" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="62dp"
         android:layout_gravity="bottom"
-        android:layout_marginStart="@dimen/edge" android:layout_marginEnd="@dimen/edge"
-        android:layout_marginBottom="10dp"
-        android:background="@drawable/nav_bg" android:elevation="10dp"
-        app:menu="@menu/bottom_nav_menu" app:labelVisibilityMode="labeled"
-        app:itemIconTint="@color/nav_tint" app:itemTextColor="@color/nav_tint"
-        app:itemRippleColor="@color/ripple" app:itemBackground="@drawable/nav_item_bg" />
+        android:layout_marginStart="18dp" android:layout_marginEnd="18dp"
+        android:layout_marginBottom="14dp"
+        android:background="@drawable/nav_bg"
+        android:elevation="14dp"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled"
+        app:itemIconSize="22dp"
+        app:itemIconTint="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_color"
+        app:itemRippleColor="#55FFFFFF"
+        app:itemBackground="@drawable/nav_item_bg"
+        app:itemHorizontalTranslationEnabled="false" />
 </FrameLayout>
