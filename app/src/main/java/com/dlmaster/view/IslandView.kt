@@ -3,45 +3,83 @@ package com.dlmaster.view
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.RadialGradient
 import android.graphics.RectF
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
-import kotlin.math.abs
+import androidx.dynamicanimation.animation.FloatValueHolder
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import kotlin.math.sin
 
-/**
- * 灵动岛视图
- * 仿 iQOO 原子通知胶囊
- *   - 黑色圆角胶囊
- *   - 左侧圆形图标
- *   - 中间文字 + 波纹动画
- *   - 右侧百分比/状态
- */
 class IslandView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs) {
-
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val density = resources.displayMetrics.density
+    private var expandProgress = 1f
+    private var expandSpring: SpringAnimation? = null
+    private var iconScale = 1f
+    private var iconSpring: SpringAnimation? = null
+    private var glowAlpha = 0f
     private var phase = 0f
+    private var wavePhase = 0f
+    private var scanPhase = 0f
     private var paused = false
 
-    // 状态
-    var title: String = "下载中"
-        set(v) { field = v; invalidate() }
+    var title: String = ""
+        set(v) { if (field != v) { field = v; invalidate() } }
     var subtitle: String = ""
-        set(v) { field = v; invalidate() }
+        set(v) { if (field != v) { field = v; invalidate() } }
     var rightText: String = ""
-        set(v) { field = v; invalidate() }
-    var progress: Float = 0f  // 0.0 - 1.0
+        set(v) { if (field != v) { field = v; invalidate() } }
+    var progress: Float = 0f
         set(v) { field = v.coerceIn(0f, 1f); invalidate() }
-    var mode: Mode = Mode.DOWNLOAD
-        set(v) { field = v; invalidate() }
+    var mode: Mode = Mode.IDLE
+        set(v) { if (field != v) { field = v; invalidate() } }
     var iconColor: Int = 0xFF69F0AE.toInt()
         set(v) { field = v; invalidate() }
 
-    enum class Mode { DOWNLOAD, MUSIC, CHARGE, IDLE }
+    enum class Mode { IDLE, DOWNLOAD, MUSIC }
+
+    init { setClickable(false); setFocusable(false); setWillNotDraw(false) }
+
+    fun expand() {
+        if (expandProgress >= 0.99f) return
+        animateExpandTo(1f); animateIconTo(1.10f)
+    }
+    fun collapse() {
+        if (expandProgress <= 0.01f) return
+        animateExpandTo(0f); animateIconTo(1.00f)
+    }
+    private fun animateExpandTo(target: Float) {
+        expandSpring?.cancel()
+        val holder = FloatValueHolder(expandProgress)
+        val anim = SpringAnimation(holder)
+        anim.spring = SpringForce(target).apply {
+            stiffness = if (target > 0.5f) 220f else 280f
+            dampingRatio = if (target > 0.5f) 0.78f else 0.85f
+        }
+        anim.addUpdateListener { _, value, _ ->
+            expandProgress = value.coerceIn(0f, 1f)
+            glowAlpha = ((expandProgress - 0.3f) / 0.7f).coerceIn(0f, 1f)
+            invalidate()
+        }
+        anim.start(); expandSpring = anim
+    }
+    private fun animateIconTo(target: Float) {
+        iconSpring?.cancel()
+        val holder = FloatValueHolder(iconScale)
+        val anim = SpringAnimation(holder)
+        anim.spring = SpringForce(target).apply { stiffness = 400f; dampingRatio = 0.55f }
+        anim.addUpdateListener { _, value, _ ->
+            iconScale = value.coerceIn(0.8f, 1.3f); invalidate()
+        }
+        anim.start(); iconSpring = anim
+    }
 
     fun pause() { paused = true }
     fun resume() { paused = false; postInvalidateOnAnimation() }
@@ -49,102 +87,134 @@ class IslandView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (paused) return
-        val w = width.toFloat()
-        val h = height.toFloat()
-        if (w <= 0 || h <= 0) return
+        val vw = width.toFloat(); val vh = height.toFloat()
+        if (vw <= 0 || vh <= 0) return
 
-        val pad = 3f * density
-        val r = (h - pad * 2) / 2f
+        val expandedW = vw * 0.92f
+        val collapsedW = 110f * density
+        val currentW = collapsedW + (expandedW - collapsedW) * expandProgress
+        val cx = vw / 2f; val cy = vh / 2f
+        val r = vh / 2f - 1.5f * density
+        val left = cx - currentW / 2f; val right = cx + currentW / 2f
+        val top = cy - r; val bottom = cy + r
 
-        // 胶囊背景
+        if (glowAlpha > 0.02f) {
+            val glowRadius = currentW * 0.75f
+            val gColors = intArrayOf((iconColor and 0x00FFFFFF) or 0x40000000, 0x00000000)
+            val breathe = 1f + 0.06f * sin(phase * 0.8f)
+            val grad = RadialGradient(cx, cy, glowRadius * breathe,
+                gColors, floatArrayOf(0f, 1f), Shader.TileMode.CLAMP)
+            paint.style = Paint.Style.FILL; paint.shader = grad
+            paint.alpha = (glowAlpha * 180).toInt().coerceIn(0, 255)
+            canvas.drawCircle(cx, cy, glowRadius * breathe, paint)
+            paint.shader = null
+        }
+
         paint.style = Paint.Style.FILL
-        paint.color = Color.parseColor("#F0101010")
-        val bgRect = RectF(pad, pad, w - pad, h - pad)
-        canvas.drawRoundRect(bgRect, r, r, paint)
+        paint.color = Color.parseColor("#FF000000")
+        paint.alpha = 255
+        val bg = RectF(left, top, right, bottom)
+        canvas.drawRoundRect(bg, r, r, paint)
 
-        // 内层高光边
+        if (expandProgress > 0.5f) {
+            scanPhase += 0.008f; if (scanPhase > 1f) scanPhase -= 1f
+            val scanX = left + currentW * scanPhase
+            val grad2 = LinearGradient(scanX - 40f * density, 0f, scanX + 40f * density, 0f,
+                intArrayOf(0x00FFFFFF, 0x18FFFFFF, 0x00FFFFFF), floatArrayOf(0f, 0.5f, 1f),
+                Shader.TileMode.CLAMP)
+            paint.style = Paint.Style.FILL; paint.shader = grad2
+            paint.alpha = 255
+            canvas.drawRoundRect(bg, r, r, paint)
+            paint.shader = null
+        }
+
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 0.8f * density
-        paint.color = Color.parseColor("#30FFFFFF")
-        canvas.drawRoundRect(bgRect, r, r, paint)
+        paint.strokeWidth = 0.6f * density
+        paint.color = Color.parseColor("#1AFFFFFF")
+        paint.alpha = 255
+        canvas.drawRoundRect(bg, r, r, paint)
 
-        // 左侧图标圆(封面)
-        val iconCx = pad + r
-        val iconCy = h / 2f
-        val iconR = r - 4f * density
+        val contentAlpha = ((expandProgress - 0.4f) / 0.6f).coerceIn(0f, 1f)
+        if (contentAlpha <= 0.05f) {
+            phase += 0.06f; wavePhase += 0.15f
+            if (phase > 100f) phase = 0f; if (wavePhase > 100f) wavePhase = 0f
+            postInvalidateOnAnimation(); return
+        }
+
+        val iconBaseR = r * 0.62f
+        val iconR = iconBaseR * iconScale
+        val iconCx = left + r * 0.72f + iconBaseR * 0.15f
+        val iconCy = cy
+
+        val igrad = RadialGradient(iconCx, iconCy, iconR * 1.8f,
+            intArrayOf((iconColor and 0x00FFFFFF) or 0x60FFFFFF.toInt(), 0x00FFFFFF),
+            floatArrayOf(0f, 1f), Shader.TileMode.CLAMP)
+        paint.style = Paint.Style.FILL; paint.shader = igrad
+        paint.alpha = (contentAlpha * 120).toInt().coerceIn(0, 255)
+        canvas.drawCircle(iconCx, iconCy, iconR * 1.8f, paint)
+        paint.shader = null
+
         paint.style = Paint.Style.FILL
         paint.color = iconColor
+        paint.alpha = (contentAlpha * 255).toInt()
         canvas.drawCircle(iconCx, iconCy, iconR, paint)
 
-        // 图标内部图案(下载箭头/音乐/闪电)
         paint.color = Color.WHITE
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2f * density
+        paint.strokeWidth = 1.8f * density
         paint.strokeCap = Paint.Cap.ROUND
+        paint.alpha = (contentAlpha * 255).toInt()
         when (mode) {
             Mode.DOWNLOAD -> {
-                canvas.drawLine(iconCx, iconCy - 6f * density, iconCx, iconCy + 4f * density, paint)
-                canvas.drawLine(iconCx - 4f * density, iconCy, iconCx, iconCy + 4f * density, paint)
-                canvas.drawLine(iconCx + 4f * density, iconCy, iconCx, iconCy + 4f * density, paint)
+                val s = iconR * 0.55f
+                canvas.drawLine(iconCx, iconCy - s, iconCx, iconCy + s * 0.7f, paint)
+                canvas.drawLine(iconCx - s * 0.6f, iconCy + s * 0.1f, iconCx, iconCy + s * 0.7f, paint)
+                canvas.drawLine(iconCx + s * 0.6f, iconCy + s * 0.1f, iconCx, iconCy + s * 0.7f, paint)
             }
             Mode.MUSIC -> {
-                // 三条竖线(波纹)
                 for (i in -1..1) {
-                    val bx = iconCx + i * 4f * density
-                    val bh = (6f + 4f * sin(phase * 6f + i)) * density
+                    val bx = iconCx + i * 3.5f * density
+                    val bh = (4f + 3f * sin(wavePhase * 2f + i)) * density
                     canvas.drawLine(bx, iconCy - bh / 2f, bx, iconCy + bh / 2f, paint)
                 }
             }
-            Mode.CHARGE -> {
-                canvas.drawLine(iconCx + 2f * density, iconCy - 7f * density,
-                                iconCx - 2f * density, iconCy, paint)
-                canvas.drawLine(iconCx - 2f * density, iconCy,
-                                iconCx + 2f * density, iconCy, paint)
-                canvas.drawLine(iconCx + 2f * density, iconCy,
-                                iconCx - 2f * density, iconCy + 7f * density, paint)
-            }
-            Mode.IDLE -> { /* 空 */ }
+            Mode.IDLE -> {}
         }
 
-        // 中间文字
         paint.style = Paint.Style.FILL
+        paint.alpha = (contentAlpha * 255).toInt()
         paint.color = Color.WHITE
-        paint.textSize = 13f * density
+        paint.textSize = 12f * density
         paint.textAlign = Paint.Align.LEFT
-        val textX = iconCx + iconR + 12f * density
-        val midY = h / 2f + paint.textSize / 3f
-        canvas.drawText(title, textX, midY, paint)
+        val textLeft = iconCx + iconBaseR + 8f * density
+        val textBaseline = cy + paint.textSize * 0.35f
+        val displayTitle = if (title.length > 14) title.take(13) + "…" else title
+        canvas.drawText(displayTitle, textLeft, textBaseline, paint)
 
-        // 副标题(小)
-        if (subtitle.isNotEmpty()) {
-            paint.color = Color.parseColor("#B0FFFFFF")
-            paint.textSize = 10f * density
-            canvas.drawText(subtitle, textX, midY + 14f * density, paint)
+        if (rightText.isNotEmpty()) {
+            paint.textSize = 12f * density
+            paint.textAlign = Paint.Align.RIGHT
+            canvas.drawText(rightText, right - r * 0.7f, textBaseline, paint)
         }
 
-        // 右侧文字
-        paint.color = Color.WHITE
-        paint.textSize = 14f * density
-        paint.textAlign = Paint.Align.RIGHT
-        canvas.drawText(rightText, w - pad - 14f * density, midY, paint)
-
-        // 底部进度线
-        if (mode == Mode.DOWNLOAD && progress > 0f) {
-            val barY = h - 5f * density
-            val barLeft = iconCx + iconR + 12f * density
-            val barRight = w - pad - 14f * density
-            paint.color = Color.parseColor("#30FFFFFF")
+        if (mode == Mode.DOWNLOAD && progress > 0f && expandProgress > 0.7f) {
+            val barH = 1.8f * density
+            val barTop = bottom - barH - 4f * density
+            val barLeft = iconCx + iconBaseR + 8f * density
+            val barRight = right - r * 0.7f
             paint.style = Paint.Style.FILL
-            canvas.drawRoundRect(RectF(barLeft, barY, barRight, barY + 2f * density),
-                                1f * density, 1f * density, paint)
-            paint.color = 0xFF69F0AE.toInt()
+            paint.color = Color.parseColor("#30FFFFFF")
+            paint.alpha = (contentAlpha * 255).toInt()
+            canvas.drawRoundRect(RectF(barLeft, barTop, barRight, barTop + barH),
+                barH / 2f, barH / 2f, paint)
+            paint.color = iconColor
             val fillRight = barLeft + (barRight - barLeft) * progress
-            canvas.drawRoundRect(RectF(barLeft, barY, fillRight, barY + 2f * density),
-                                1f * density, 1f * density, paint)
+            canvas.drawRoundRect(RectF(barLeft, barTop, fillRight, barTop + barH),
+                barH / 2f, barH / 2f, paint)
         }
 
-        phase += 0.06f
-        if (phase > 100f) phase = 0f
+        phase += 0.06f; wavePhase += 0.15f
+        if (phase > 100f) phase = 0f; if (wavePhase > 100f) wavePhase = 0f
         postInvalidateOnAnimation()
     }
 }

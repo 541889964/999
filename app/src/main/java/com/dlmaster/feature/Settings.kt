@@ -1,58 +1,41 @@
 package com.dlmaster.feature
-
 import android.content.Context
 import android.content.SharedPreferences
 
 object Settings {
     private const val NAME = "dl_settings"
     private var sp: SharedPreferences? = null
+    fun init(c: Context) { sp = c.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE) }
+    private fun prefs() = sp
 
-    private const val K_DOWNLOAD_DIR = "download_dir"
-    private const val K_PROXY_ENABLED = "proxy_on"
-    private const val K_PROXY_URL = "proxy_url"
-    private const val K_SPEED_LIMIT = "speed_limit"
-    private const val K_WIFI_ONLY = "wifi_only"
-    private const val K_NIGHT = "night"
-    private const val K_CLIP_AUTO = "clip_auto"
-    private const val K_UA = "user_agent"
-    private const val K_NOTIFY_SOUND = "notify_sound"
-    private const val K_CONFIRM_DL = "confirm_dl"
+    fun downloadDir(): String = prefs()?.getString("download_dir", "") ?: ""
+    fun setDownloadDir(v: String) { prefs()?.edit()?.putString("download_dir", v)?.apply() }
 
-    fun init(c: Context) {
-        sp = c.applicationContext.getSharedPreferences(NAME, Context.MODE_PRIVATE)
-    }
+    fun proxyEnabled(): Boolean = prefs()?.getBoolean("proxy_on", false) ?: false
+    fun setProxyEnabled(v: Boolean) { prefs()?.edit()?.putBoolean("proxy_on", v)?.apply() }
+    fun proxyUrl(): String = prefs()?.getString("proxy_url", "") ?: ""
+    fun setProxyUrl(v: String) { prefs()?.edit()?.putString("proxy_url", v)?.apply() }
 
-    private fun prefs(): SharedPreferences? = sp
+    fun speedLimit(): Long = prefs()?.getLong("speed_limit", 0L) ?: 0L
+    fun setSpeedLimit(v: Long) { prefs()?.edit()?.putLong("speed_limit", v)?.apply() }
 
-    fun downloadDir(): String = prefs()?.getString(K_DOWNLOAD_DIR, "") ?: ""
-    fun setDownloadDir(v: String) { prefs()?.edit()?.putString(K_DOWNLOAD_DIR, v)?.apply() }
+    fun wifiOnly(): Boolean = prefs()?.getBoolean("wifi_only", false) ?: false
+    fun setWifiOnly(v: Boolean) { prefs()?.edit()?.putBoolean("wifi_only", v)?.apply() }
 
-    fun proxyEnabled(): Boolean = prefs()?.getBoolean(K_PROXY_ENABLED, false) ?: false
-    fun setProxyEnabled(v: Boolean) { prefs()?.edit()?.putBoolean(K_PROXY_ENABLED, v)?.apply() }
+    fun night(): Boolean = prefs()?.getBoolean("night", true) ?: true
+    fun setNight(v: Boolean) { prefs()?.edit()?.putBoolean("night", v)?.apply() }
 
-    fun proxyUrl(): String = prefs()?.getString(K_PROXY_URL, "") ?: ""
-    fun setProxyUrl(v: String) { prefs()?.edit()?.putString(K_PROXY_URL, v)?.apply() }
+    fun clipAuto(): Boolean = prefs()?.getBoolean("clip_auto", true) ?: true
+    fun setClipAuto(v: Boolean) { prefs()?.edit()?.putBoolean("clip_auto", v)?.apply() }
 
-    fun speedLimit(): Long = prefs()?.getLong(K_SPEED_LIMIT, 0L) ?: 0L
-    fun setSpeedLimit(v: Long) { prefs()?.edit()?.putLong(K_SPEED_LIMIT, v)?.apply() }
+    fun userAgent(): String = prefs()?.getString("user_agent", "") ?: ""
+    fun setUserAgent(v: String) { prefs()?.edit()?.putString("user_agent", v)?.apply() }
 
-    fun wifiOnly(): Boolean = prefs()?.getBoolean(K_WIFI_ONLY, false) ?: false
-    fun setWifiOnly(v: Boolean) { prefs()?.edit()?.putBoolean(K_WIFI_ONLY, v)?.apply() }
+    fun notifySound(): Boolean = prefs()?.getBoolean("notify_sound", true) ?: true
+    fun setNotifySound(v: Boolean) { prefs()?.edit()?.putBoolean("notify_sound", v)?.apply() }
 
-    fun night(): Boolean = prefs()?.getBoolean(K_NIGHT, true) ?: true
-    fun setNight(v: Boolean) { prefs()?.edit()?.putBoolean(K_NIGHT, v)?.apply() }
-
-    fun clipAuto(): Boolean = prefs()?.getBoolean(K_CLIP_AUTO, true) ?: true
-    fun setClipAuto(v: Boolean) { prefs()?.edit()?.putBoolean(K_CLIP_AUTO, v)?.apply() }
-
-    fun userAgent(): String = prefs()?.getString(K_UA, "") ?: ""
-    fun setUserAgent(v: String) { prefs()?.edit()?.putString(K_UA, v)?.apply() }
-
-    fun notifySound(): Boolean = prefs()?.getBoolean(K_NOTIFY_SOUND, true) ?: true
-    fun setNotifySound(v: Boolean) { prefs()?.edit()?.putBoolean(K_NOTIFY_SOUND, v)?.apply() }
-
-    fun confirmDownload(): Boolean = prefs()?.getBoolean(K_CONFIRM_DL, false) ?: false
-    fun setConfirmDownload(v: Boolean) { prefs()?.edit()?.putBoolean(K_CONFIRM_DL, v)?.apply() }
+    fun confirmDownload(): Boolean = prefs()?.getBoolean("confirm_dl", false) ?: false
+    fun setConfirmDownload(v: Boolean) { prefs()?.edit()?.putBoolean("confirm_dl", v)?.apply() }
 
     fun islandEnabled(): Boolean = prefs()?.getBoolean("island_on", false) ?: false
     fun setIslandEnabled(v: Boolean) { prefs()?.edit()?.putBoolean("island_on", v)?.apply() }

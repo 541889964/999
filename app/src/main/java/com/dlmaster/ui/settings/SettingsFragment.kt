@@ -1,9 +1,11 @@
 package com.dlmaster.ui.settings
-import android.app.AlertDialog
+
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.Switch
 import android.widget.TextView
@@ -11,50 +13,118 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.dlmaster.MainActivity
 import com.dlmaster.R
+import com.dlmaster.theme.ThemeManager
 import com.dlmaster.util.MusicPlayer
 import com.dlmaster.util.Prefs
+
 class SettingsFragment : Fragment() {
-    private val labels = arrayOf("3 秒","5 秒","10 秒","20 秒","30 秒","60 秒")
-    override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View = i.inflate(R.layout.fragment_settings, c, false)
+
+    override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View =
+        i.inflate(R.layout.fragment_settings, c, false)
+
     override fun onViewCreated(v: View, s: Bundle?) {
-        val swBg = v.findViewById<Switch>(R.id.sw_bg); val swMusic = v.findViewById<Switch>(R.id.sw_music); val swClip = v.findViewById<Switch>(R.id.sw_clip)
-        val sb = v.findViewById<SeekBar>(R.id.sb_freq); val tvFreq = v.findViewById<TextView>(R.id.tv_freq)
-        val tvCache = v.findViewById<TextView>(R.id.tv_cache_size); val tvVersion = v.findViewById<TextView>(R.id.tv_version)
-        val swIsland = v.findViewById<Switch>(R.id.sw_island)
-        swIsland.isChecked = com.dlmaster.feature.Settings.islandEnabled()
-        swIsland.setOnCheckedChangeListener { _, c ->
-            com.dlmaster.feature.Settings.setIslandEnabled(c)
-            val act = activity as? MainActivity
-            if (c) act?.startIsland() else act?.stopIsland()
+        val ctx = requireContext()
+
+        // 主题色
+        val themeRow = v.findViewById<LinearLayout>(R.id.theme_row)
+        val current = ThemeManager.current(ctx)
+        ThemeManager.ALL.forEach { th ->
+            val dot = View(ctx).apply {
+                val size = (48 * resources.displayMetrics.density).toInt()
+                layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                    marginEnd = (14 * resources.displayMetrics.density).toInt()
+                }
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(th.primary)
+                    if (th.key == current.key) setStroke((3 * resources.displayMetrics.density).toInt(), 0xFFFFFFFF.toInt())
+                    else setStroke((1 * resources.displayMetrics.density).toInt(), 0x40FFFFFF)
+                }
+                setOnClickListener {
+                    ThemeManager.setCurrent(ctx, th.key)
+                    try { (activity as? MainActivity)?.recreate() } catch (_: Throwable) {}
+                }
+            }
+            themeRow.addView(dot)
         }
-        swBg.isChecked = Prefs.bgEnabled(requireContext()); swMusic.isChecked = Prefs.musicEnabled(requireContext()); swClip.isChecked = Prefs.clipboardEnabled(requireContext())
-        sb.progress = Prefs.bgFreqIndex(requireContext()); tvFreq.text = labels[sb.progress]
-        tvVersion.text = "v16.0"; tvCache.text = calcCacheSize()
-        sb.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(s: SeekBar?, p: Int, fromUser: Boolean) { tvFreq.text = labels[p]; Prefs.setBgFreqIndex(requireContext(), p); if (fromUser) (activity as? MainActivity)?.restartBgSchedule() }
+
+        // 布局模式
+        val btnList = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_layout_list)
+        val btnGrid = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_layout_grid)
+        val btnCompact = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_layout_compact)
+
+        fun updateLayoutBtn() {
+            val m = ThemeManager.layoutMode(requireContext())
+            fun setBtn(b: com.google.android.material.button.MaterialButton, active: Boolean) {
+                try {
+                    if (active) {
+                        b.setTextColor(0xFFFFFFFF.toInt())
+                        b.setBackgroundColor(ThemeManager.current(requireContext()).primary)
+                    } else {
+                        b.setTextColor(0xFFCCFFFFFF.toInt())
+                        b.setBackgroundColor(0x00000000)
+                    }
+                } catch (_: Throwable) {}
+            }
+            setBtn(btnList, m == "list"); setBtn(btnGrid, m == "grid"); setBtn(btnCompact, m == "compact")
+        }
+        updateLayoutBtn()
+        btnList.setOnClickListener { ThemeManager.setLayoutMode(requireContext(), "list"); updateLayoutBtn() }
+        btnGrid.setOnClickListener { ThemeManager.setLayoutMode(requireContext(), "grid"); updateLayoutBtn() }
+        btnCompact.setOnClickListener { ThemeManager.setLayoutMode(requireContext(), "compact"); updateLayoutBtn() }
+
+        // 帧率
+        val sbFr = v.findViewById<SeekBar>(R.id.sb_framerate)
+        val tvFr = v.findViewById<TextView>(R.id.tv_framerate_val)
+        val frValues = intArrayOf(60, 90, 120)
+        val curFr = try { com.dlmaster.feature.Settings.frameRate() } catch (_: Throwable) { 60 }
+        sbFr.progress = when (curFr) { 90 -> 1; 120 -> 2; else -> 0 }
+        tvFr.text = "$curFr FPS"
+        sbFr.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(s: SeekBar?, p: Int, fromUser: Boolean) {
+                val fr = frValues[p.coerceIn(0, 2)]
+                tvFr.text = "$fr FPS"
+                try { com.dlmaster.feature.Settings.setFrameRate(fr) } catch (_: Throwable) {}
+                if (fromUser) try { (activity as? MainActivity)?.recreate() } catch (_: Throwable) {}
+            }
             override fun onStartTrackingTouch(s: SeekBar?) {}
             override fun onStopTrackingTouch(s: SeekBar?) {}
         })
-        swBg.setOnCheckedChangeListener { _, c -> Prefs.setBgEnabled(requireContext(), c); (activity as? MainActivity)?.restartBgSchedule() }
-        swMusic.setOnCheckedChangeListener { _, c -> Prefs.setMusicEnabled(requireContext(), c); if (c) MusicPlayer.start(requireContext().applicationContext) else MusicPlayer.stop() }
-        swClip.setOnCheckedChangeListener { _, c -> Prefs.setClipboardEnabled(requireContext(), c) }
-        v.findViewById<View>(R.id.card_clear_cache).setOnClickListener { clearCache(); tvCache.text = calcCacheSize(); Toast.makeText(requireContext(), "缓存已清", Toast.LENGTH_SHORT).show() }
-        v.findViewById<View>(R.id.card_about).setOnClickListener { AlertDialog.Builder(requireContext()).setTitle("关于下载工具").setMessage("版本 v16.0\n\n找最快的路，一直免费。\n\n粘个链接，剩下的交给它。").setPositiveButton("好", null).show() }
-    }
-    private fun calcCacheSize(): String {
-        var size = 0L
-        try { requireContext().cacheDir.walkTopDown().forEach { if (it.isFile) size += it.length() } } catch (_: Throwable) {}
-        return when {
-            size >= 1024L * 1024 * 1024 -> "%.2f GB".format(size / 1024.0 / 1024 / 1024)
-            size >= 1024L * 1024 -> "%.2f MB".format(size / 1024.0 / 1024)
-            size >= 1024L -> "%.1f KB".format(size / 1024.0)
-            else -> "$size B"
+
+        // 开关
+        val swBg = v.findViewById<Switch>(R.id.sw_bg)
+        val swMusic = v.findViewById<Switch>(R.id.sw_music)
+        val swClip = v.findViewById<Switch>(R.id.sw_clip)
+        val swIsland = v.findViewById<Switch>(R.id.sw_island)
+
+        swBg.isChecked = Prefs.bgEnabled(requireContext())
+        swMusic.isChecked = Prefs.musicEnabled(requireContext())
+        swClip.isChecked = Prefs.clipboardEnabled(requireContext())
+        swIsland.isChecked = try { com.dlmaster.feature.Settings.islandEnabled() } catch (_: Throwable) { false }
+
+        swBg.setOnCheckedChangeListener { _, c ->
+            Prefs.setBgEnabled(requireContext(), c)
+            try { (activity as? MainActivity)?.restartBgSchedule() } catch (_: Throwable) {}
         }
-    }
-    private fun clearCache() {
-        try {
-            requireContext().cacheDir.listFiles()?.forEach { it.deleteRecursively() }
-            requireContext().externalCacheDir?.listFiles()?.forEach { it.deleteRecursively() }
-        } catch (_: Throwable) {}
+        swMusic.setOnCheckedChangeListener { _, c ->
+            Prefs.setMusicEnabled(requireContext(), c)
+            if (c) MusicPlayer.start(requireContext().applicationContext) else MusicPlayer.stop()
+        }
+        swClip.setOnCheckedChangeListener { _, c -> Prefs.setClipboardEnabled(requireContext(), c) }
+        swIsland.setOnCheckedChangeListener { _, c ->
+            try {
+                com.dlmaster.feature.Settings.setIslandEnabled(c)
+                val act = activity as? MainActivity
+                if (c) act?.startIsland() else act?.stopIsland()
+            } catch (_: Throwable) {}
+        }
+
+        v.findViewById<View>(R.id.card_clear_cache)?.setOnClickListener {
+            try {
+                requireContext().cacheDir.listFiles()?.forEach { it.deleteRecursively() }
+                requireContext().externalCacheDir?.listFiles()?.forEach { it.deleteRecursively() }
+                Toast.makeText(requireContext(), "缓存已清", Toast.LENGTH_SHORT).show()
+            } catch (_: Throwable) {}
+        }
     }
 }
