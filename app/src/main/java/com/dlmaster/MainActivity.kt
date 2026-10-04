@@ -36,11 +36,11 @@ import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var bg1: ImageView
-    private lateinit var bg2: ImageView
-    private lateinit var aurora: AuroraBackgroundView
+    private var bg1: ImageView? = null
+    private var bg2: ImageView? = null
+    private var aurora: AuroraBackgroundView? = null
     private var particles: ParticleView? = null
-    private lateinit var nav: SimpleNavBar
+    private var nav: SimpleNavBar? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private var currentIdx = -1
@@ -52,59 +52,73 @@ class MainActivity : AppCompatActivity() {
     private val bgRunnable = object : Runnable {
         override fun run() {
             if (paused) return
-            switchBg()
+            try { switchBg() } catch (_: Throwable) {}
             handler.postDelayed(this, Prefs.bgIntervalMs(this@MainActivity))
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        try { setContentView(R.layout.activity_main) }
+        catch (_: Throwable) { finish(); return }
 
-        // 帧率
-        applyFrameRate()
+        try { WindowCompat.setDecorFitsSystemWindows(window, false) } catch (_: Throwable) {}
+        try { applyFrameRate() } catch (_: Throwable) {}
 
-        ids = BackgroundList.RES_IDS
+        try { ids = BackgroundList.RES_IDS } catch (_: Throwable) { ids = intArrayOf() }
+
         bg1 = findViewById(R.id.iv_bg1)
         bg2 = findViewById(R.id.iv_bg2)
         aurora = findViewById(R.id.aurora)
         particles = findViewById(R.id.particles)
         nav = findViewById(R.id.simple_nav)
 
-        PermissionHelper.requestNotifications(this)
-        if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
+        try { PermissionHelper.requestNotifications(this) } catch (_: Throwable) {}
+        try {
+            if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
+        } catch (_: Throwable) {}
 
-        nav.onTabSelected = { idx ->
-            val f: Fragment = when (idx) {
-                0 -> HomeFragment()
-                1 -> DownloadFragment()
-                2 -> BrowserFragment()
-                else -> SettingsFragment()
+        nav?.onTabSelected = { idx ->
+            // 延后一帧执行,避免 Fragment 事务和触摸事件冲突
+            handler.post {
+                try {
+                    val f: Fragment = when (idx) {
+                        0 -> HomeFragment()
+                        1 -> DownloadFragment()
+                        2 -> BrowserFragment()
+                        else -> SettingsFragment()
+                    }
+                    supportFragmentManager.beginTransaction()
+                        .setCustomAnimations(
+                            R.anim.ios_in, R.anim.ios_out,
+                            R.anim.ios_in, R.anim.ios_out
+                        )
+                        .replace(R.id.fragment_container, f)
+                        .commitAllowingStateLoss()
+                } catch (_: Throwable) {}
             }
+        }
+
+        if (savedInstanceState == null) {
             try {
                 supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        R.anim.ios_in, R.anim.ios_out,
-                        R.anim.ios_in, R.anim.ios_out
-                    )
-                    .replace(R.id.fragment_container, f)
+                    .replace(R.id.fragment_container, HomeFragment())
                     .commitAllowingStateLoss()
             } catch (_: Throwable) {}
         }
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, HomeFragment())
-                .commitAllowingStateLoss()
-        }
-
         if (!Prefs.noticeShown(this)) {
-            handler.postDelayed({ showNotice() }, 1000)
+            handler.postDelayed({
+                try { showNotice() } catch (_: Throwable) {}
+            }, 1000)
         }
 
-        // 灵动岛
-        requestOverlayIfNeeded()
+        // 灵动岛:只在用户明确开启时启动
+        try {
+            if (FeatSettings.islandEnabled() && IslandService.canShow(this)) {
+                IslandService.start(this)
+            }
+        } catch (_: Throwable) {}
     }
 
     private fun applyFrameRate() {
@@ -118,62 +132,56 @@ class MainActivity : AppCompatActivity() {
         } catch (_: Throwable) {}
     }
 
-    private fun requestOverlayIfNeeded() {
-        try {
-            if (IslandService.canShow(this)) {
-                IslandService.start(this)
-            } else if (Build.VERSION.SDK_INT >= 23) {
-                val i = Intent(
-                    SysSettings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-                startActivityForResult(i, 9527)
-            }
-        } catch (_: Throwable) {}
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        @Suppress("DEPRECATION")
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 9527) requestOverlayIfNeeded()
-    }
-
     override fun onResume() {
         super.onResume()
         paused = false
-        try { aurora.resume() } catch (_: Throwable) {}
+        try { aurora?.resume() } catch (_: Throwable) {}
         try { particles?.resume() } catch (_: Throwable) {}
-        if (Prefs.bgEnabled(this)) {
-            handler.removeCallbacks(bgRunnable)
-            switchBg()
-            handler.postDelayed(bgRunnable, Prefs.bgIntervalMs(this))
-        } else {
-            bg1.setImageDrawable(null)
-            bg2.setImageDrawable(null)
-        }
-        if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) {
-            MusicPlayer.start(applicationContext)
-        }
+        try {
+            if (Prefs.bgEnabled(this)) {
+                handler.removeCallbacks(bgRunnable)
+                switchBg()
+                handler.postDelayed(bgRunnable, Prefs.bgIntervalMs(this))
+            } else {
+                bg1?.setImageDrawable(null)
+                bg2?.setImageDrawable(null)
+            }
+        } catch (_: Throwable) {}
+        try {
+            if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) {
+                MusicPlayer.start(applicationContext)
+            }
+        } catch (_: Throwable) {}
+        try {
+            if (FeatSettings.islandEnabled() && IslandService.canShow(this)) {
+                IslandService.start(this)
+            } else {
+                IslandService.stop(this)
+            }
+        } catch (_: Throwable) {}
     }
 
     override fun onPause() {
         super.onPause()
         paused = true
-        try { aurora.pause() } catch (_: Throwable) {}
+        try { aurora?.pause() } catch (_: Throwable) {}
         try { particles?.pause() } catch (_: Throwable) {}
         handler.removeCallbacks(bgRunnable)
     }
 
     private fun switchBg() {
-        if (ids.isEmpty() || !Prefs.bgEnabled(this)) return
+        if (ids.isEmpty()) return
+        if (!Prefs.bgEnabled(this)) return
+        val a = bg1 ?: return
+        val b = bg2 ?: return
         val next: Int = if (ids.size == 1) 0 else {
             var n: Int
             do { n = Random.nextInt(ids.size) } while (n == currentIdx)
             n
         }
         currentIdx = next
-        val target = if (useFirst) bg1 else bg2
-        val current = if (useFirst) bg2 else bg1
+        val target = if (useFirst) a else b
+        val current = if (useFirst) b else a
         try {
             if (firstLoad) {
                 Glide.with(applicationContext).load(ids[next])
@@ -193,7 +201,6 @@ class MainActivity : AppCompatActivity() {
                     .override(900, 1600)
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(target)
-                // 延后 300ms 启动动画 —— Glide 从缓存加载通常 <100ms
                 target.postDelayed({
                     try {
                         val fast = AnimationUtils.loadInterpolator(
@@ -218,8 +225,38 @@ class MainActivity : AppCompatActivity() {
     fun restartBgSchedule() {
         handler.removeCallbacks(bgRunnable)
         paused = false
-        switchBg()
+        try { switchBg() } catch (_: Throwable) {}
         handler.postDelayed(bgRunnable, Prefs.bgIntervalMs(this))
+    }
+
+    fun startIsland() {
+        try {
+            if (IslandService.canShow(this)) {
+                IslandService.start(this)
+            } else if (Build.VERSION.SDK_INT >= 23) {
+                val i = Intent(
+                    SysSettings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startActivityForResult(i, 9527)
+            }
+        } catch (_: Throwable) {}
+    }
+
+    fun stopIsland() {
+        try { IslandService.stop(this) } catch (_: Throwable) {}
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 9527) {
+            try {
+                if (FeatSettings.islandEnabled() && IslandService.canShow(this)) {
+                    IslandService.start(this)
+                }
+            } catch (_: Throwable) {}
+        }
     }
 
     private fun showNotice() {

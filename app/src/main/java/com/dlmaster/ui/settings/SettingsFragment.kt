@@ -20,6 +20,13 @@ class SettingsFragment : Fragment() {
         val swBg = v.findViewById<Switch>(R.id.sw_bg); val swMusic = v.findViewById<Switch>(R.id.sw_music); val swClip = v.findViewById<Switch>(R.id.sw_clip)
         val sb = v.findViewById<SeekBar>(R.id.sb_freq); val tvFreq = v.findViewById<TextView>(R.id.tv_freq)
         val tvCache = v.findViewById<TextView>(R.id.tv_cache_size); val tvVersion = v.findViewById<TextView>(R.id.tv_version)
+        val swIsland = v.findViewById<Switch>(R.id.sw_island)
+        swIsland.isChecked = com.dlmaster.feature.Settings.islandEnabled()
+        swIsland.setOnCheckedChangeListener { _, c ->
+            com.dlmaster.feature.Settings.setIslandEnabled(c)
+            val act = activity as? MainActivity
+            if (c) act?.startIsland() else act?.stopIsland()
+        }
         swBg.isChecked = Prefs.bgEnabled(requireContext()); swMusic.isChecked = Prefs.musicEnabled(requireContext()); swClip.isChecked = Prefs.clipboardEnabled(requireContext())
         sb.progress = Prefs.bgFreqIndex(requireContext()); tvFreq.text = labels[sb.progress]
         tvVersion.text = "v16.0"; tvCache.text = calcCacheSize()

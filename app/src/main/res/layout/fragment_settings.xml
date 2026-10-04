@@ -45,6 +45,24 @@
                     android:textColor="@color/txt_primary" android:textSize="14sp" />
                 <Switch android:id="@+id/sw_clip" android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/card_pad" android:background="@color/divider" />
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="灵动岛"
+                        android:textColor="@color/txt_primary" android:textSize="14sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="显示下载/音乐悬浮胶囊(需悬浮窗权限)"
+                        android:textColor="@color/txt_secondary" android:textSize="11sp" />
+                </LinearLayout>
+                <Switch android:id="@+id/sw_island" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            </LinearLayout>
         </LinearLayout>
         <LinearLayout android:id="@+id/card_clear_cache"
             android:layout_width="match_parent" android:layout_height="wrap_content"

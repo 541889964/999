@@ -54,6 +54,9 @@ object Settings {
     fun confirmDownload(): Boolean = prefs()?.getBoolean(K_CONFIRM_DL, false) ?: false
     fun setConfirmDownload(v: Boolean) { prefs()?.edit()?.putBoolean(K_CONFIRM_DL, v)?.apply() }
 
+    fun islandEnabled(): Boolean = prefs()?.getBoolean("island_on", false) ?: false
+    fun setIslandEnabled(v: Boolean) { prefs()?.edit()?.putBoolean("island_on", v)?.apply() }
+
     fun frameRate(): Int = prefs()?.getInt("frame_rate", 60) ?: 60
     fun setFrameRate(v: Int) { prefs()?.edit()?.putInt("frame_rate", v)?.apply() }
 

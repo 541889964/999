@@ -9,15 +9,9 @@ import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
-/**
- * 自绘底部导航栏
- *   - 4 个 tab,每个有 icon + label
- *   - 选中项有圆角高亮块
- *   - 完全不依赖 Material 组件
- *   - 不显示 -> 不可能
- */
 class SimpleNavBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : View(context, attrs) {
@@ -26,25 +20,29 @@ class SimpleNavBar @JvmOverloads constructor(
     private val path = Path()
 
     var onTabSelected: ((Int) -> Unit)? = null
+
     var selectedIndex: Int = 0
         set(value) {
             if (field != value) {
                 field = value
                 invalidate()
-                onTabSelected?.invoke(value)
+                try { onTabSelected?.invoke(value) } catch (_: Throwable) {}
             }
         }
 
+    private var pressed = false
     private val labels = arrayOf("首页", "任务", "浏览", "设置")
     private val density = resources.displayMetrics.density
 
-    // 4 种图标绘制方式
-    private fun drawHomeIcon(c: Canvas, cx: Float, cy: Float, size: Float, color: Int) {
+    init {
+        isClickable = true
+        isFocusable = true
+    }
+
+    private fun drawHomeIcon(c: Canvas, cx: Float, cy: Float, s: Float, color: Int) {
         paint.color = color
         paint.style = Paint.Style.FILL
-        val s = size
         path.reset()
-        // 房子:三角形屋顶 + 矩形身体
         path.moveTo(cx, cy - s * 0.9f)
         path.lineTo(cx - s * 0.9f, cy)
         path.lineTo(cx + s * 0.9f, cy)
@@ -53,13 +51,11 @@ class SimpleNavBar @JvmOverloads constructor(
         c.drawRect(cx - s * 0.6f, cy, cx + s * 0.6f, cy + s * 0.8f, paint)
     }
 
-    private fun drawTaskIcon(c: Canvas, cx: Float, cy: Float, size: Float, color: Int) {
+    private fun drawTaskIcon(c: Canvas, cx: Float, cy: Float, s: Float, color: Int) {
         paint.color = color
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = density * 2f
         paint.strokeCap = Paint.Cap.ROUND
-        val s = size
-        // 向下箭头 + 底线
         c.drawLine(cx, cy - s * 0.9f, cx, cy + s * 0.3f, paint)
         path.reset()
         path.moveTo(cx - s * 0.5f, cy - s * 0.1f)
@@ -69,28 +65,24 @@ class SimpleNavBar @JvmOverloads constructor(
         c.drawLine(cx - s * 0.8f, cy + s * 0.9f, cx + s * 0.8f, cy + s * 0.9f, paint)
     }
 
-    private fun drawBrowserIcon(c: Canvas, cx: Float, cy: Float, size: Float, color: Int) {
+    private fun drawBrowserIcon(c: Canvas, cx: Float, cy: Float, s: Float, color: Int) {
         paint.color = color
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = density * 2f
-        val s = size
-        // 地球:圆 + 竖线 + 横线
         c.drawCircle(cx, cy, s * 0.9f, paint)
         c.drawLine(cx, cy - s * 0.9f, cx, cy + s * 0.9f, paint)
         c.drawLine(cx - s * 0.9f, cy, cx + s * 0.9f, cy, paint)
     }
 
-    private fun drawSettingsIcon(c: Canvas, cx: Float, cy: Float, size: Float, color: Int) {
+    private fun drawSettingsIcon(c: Canvas, cx: Float, cy: Float, s: Float, color: Int) {
         paint.color = color
         paint.style = Paint.Style.FILL
-        val s = size
-        // 齿轮:6 个小圆 + 中心
         val r = s * 0.4f
         val outer = s * 0.9f
         for (i in 0 until 6) {
             val a = i * Math.PI / 3.0
-            val tx = cx + (outer * Math.cos(a)).toFloat()
-            val ty = cy + (outer * Math.sin(a)).toFloat()
+            val tx = cx + (outer * cos(a)).toFloat()
+            val ty = cy + (outer * sin(a)).toFloat()
             c.drawCircle(tx, ty, r * 0.6f, paint)
         }
         c.drawCircle(cx, cy, r * 0.9f, paint)
@@ -115,7 +107,6 @@ class SimpleNavBar @JvmOverloads constructor(
         paint.color = Color.parseColor("#80FFFFFF")
         canvas.drawRoundRect(rf, radius, radius, paint)
 
-        // 4 个 tab
         val tabW = w / 4f
         val iconSize = 11f * density
         for (i in 0 until 4) {
@@ -123,7 +114,6 @@ class SimpleNavBar @JvmOverloads constructor(
             val cy = h * 0.42f
             val selected = (i == selectedIndex)
 
-            // 选中项高亮块
             if (selected) {
                 paint.style = Paint.Style.FILL
                 paint.color = Color.parseColor("#50E8A0F8")
@@ -141,24 +131,35 @@ class SimpleNavBar @JvmOverloads constructor(
                 3 -> drawSettingsIcon(canvas, cx, cy, iconSize, color)
             }
 
-            // 文字
             paint.style = Paint.Style.FILL
             paint.color = color
             paint.textSize = 11f * density
             paint.textAlign = Paint.Align.CENTER
-            val tw = paint.measureText(labels[i])
-            canvas.drawText(labels[i], cx - tw / 2f + tw / 2f, h * 0.86f, paint)
+            canvas.drawText(labels[i], cx, h * 0.86f, paint)
         }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (event.action == MotionEvent.ACTION_DOWN) {
-            val tabW = width.toFloat() / 4f
-            val i = (event.x / tabW).toInt().coerceIn(0, 3)
-            if (i != selectedIndex) {
-                selectedIndex = i
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                pressed = true
+                return true
             }
-            return true
+            MotionEvent.ACTION_UP -> {
+                if (pressed) {
+                    pressed = false
+                    val tabW = width.toFloat() / 4f
+                    val i = (event.x / tabW).toInt().coerceIn(0, 3)
+                    if (i != selectedIndex) {
+                        selectedIndex = i
+                    }
+                }
+                return true
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                pressed = false
+                return true
+            }
         }
         return super.onTouchEvent(event)
     }
