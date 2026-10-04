@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import com.dlmaster.util.PermissionHelper
-
 class SplashActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,12 +16,9 @@ class SplashActivity : AppCompatActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         PermissionHelper.requestBase(this)
         try {
-            findViewById<ImageView>(R.id.iv_logo).startAnimation(
-                AnimationUtils.loadAnimation(this, R.anim.logo_enter))
-            findViewById<TextView>(R.id.tv_brand).startAnimation(
-                AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
-            findViewById<TextView>(R.id.tv_slogan).startAnimation(
-                AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
+            findViewById<ImageView>(R.id.iv_logo).startAnimation(AnimationUtils.loadAnimation(this, R.anim.logo_enter))
+            findViewById<TextView>(R.id.tv_brand).startAnimation(AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
+            findViewById<TextView>(R.id.tv_slogan).startAnimation(AnimationUtils.loadAnimation(this, R.anim.text_fade_in))
         } catch (_: Throwable) {}
         Handler(Looper.getMainLooper()).postDelayed({
             try {

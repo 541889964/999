@@ -24,20 +24,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:resizeableActivity="true"
+        android:usesCleartextTraffic="true"
         tools:targetApi="34">
-        <activity
-            android:name=".SplashActivity"
-            android:exported="true"
-            android:theme="@style/SplashTheme"
-            android:screenOrientation="portrait">
+        <activity android:name=".SplashActivity" android:exported="true"
+            android:theme="@style/SplashTheme" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MainActivity"
-            android:exported="false"
+        <activity android:name=".MainActivity" android:exported="false"
             android:windowSoftInputMode="adjustResize"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden" />
         <activity android:name=".deeplink.ThunderActivity" android:exported="true">
@@ -49,12 +45,11 @@
                 <data android:scheme="magnet" />
             </intent-filter>
         </activity>
-        <provider
-            android:name="androidx.core.content.FileProvider"
+        <provider android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+            android:exported="false" android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
     </application>
 </manifest>

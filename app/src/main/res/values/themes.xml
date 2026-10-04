@@ -13,24 +13,20 @@
         <item name="android:windowBackground">@color/bg</item>
         <item name="android:windowAnimationStyle">@style/WindowAnim</item>
     </style>
-
     <style name="SplashTheme" parent="AppTheme">
         <item name="android:windowBackground">@color/primary</item>
         <item name="android:windowAnimationStyle">@null</item>
     </style>
-
     <style name="WindowAnim" parent="@android:style/Animation.Activity">
         <item name="android:activityOpenEnterAnimation">@anim/act_in</item>
         <item name="android:activityOpenExitAnimation">@anim/act_out_left</item>
         <item name="android:activityCloseEnterAnimation">@anim/act_in_left</item>
         <item name="android:activityCloseExitAnimation">@anim/act_out</item>
     </style>
-
     <style name="DialogAnim" parent="@android:style/Animation.Dialog">
         <item name="android:windowEnterAnimation">@anim/dlg_in</item>
         <item name="android:windowExitAnimation">@anim/dlg_out</item>
     </style>
-
     <style name="PillButton" parent="Widget.MaterialComponents.Button">
         <item name="android:textAllCaps">false</item>
         <item name="android:textSize">@dimen/text_button</item>
@@ -41,17 +37,6 @@
         <item name="cornerRadius">@dimen/radius_btn</item>
         <item name="backgroundTint">@color/primary</item>
     </style>
-
-    <style name="PillOutlinedButton" parent="Widget.MaterialComponents.Button.OutlinedButton">
-        <item name="android:textAllCaps">false</item>
-        <item name="android:textSize">@dimen/text_button</item>
-        <item name="android:minHeight">@dimen/btn_h</item>
-        <item name="strokeColor">@color/primary</item>
-        <item name="strokeWidth">1.5dp</item>
-        <item name="cornerRadius">@dimen/radius_btn</item>
-        <item name="android:textColor">@color/primary</item>
-    </style>
-
     <style name="TextButton" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:textAllCaps">false</item>
         <item name="android:textColor">@color/txt_secondary</item>

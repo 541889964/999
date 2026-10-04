@@ -6,79 +6,56 @@
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="@dimen/edge" android:paddingBottom="120dp">
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/top_pad" android:text="设置"
-            android:textColor="@color/white" android:textSize="@dimen/text_title_xl" android:textStyle="bold"
+            android:layout_marginTop="@dimen/top_pad" android:text="设置" android:textColor="@color/white"
+            android:textSize="@dimen/text_title_xl" android:textStyle="bold"
             android:shadowColor="#CC000000" android:shadowDx="0" android:shadowDy="2" android:shadowRadius="8" />
-
-        <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" android:orientation="vertical"
             android:background="@drawable/card_glass" android:padding="@dimen/card_pad">
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:text="@string/settings_bg"
-                        android:textColor="@color/txt_primary" android:textSize="@dimen/text_label" />
-                    <Switch android:id="@+id/sw_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                </LinearLayout>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp" android:text="@string/settings_bg_freq"
-                    android:textColor="@color/txt_secondary" android:textSize="@dimen/text_meta" />
-                <SeekBar android:id="@+id/sb_freq" android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:max="5" android:progress="2" />
-                <TextView android:id="@+id/tv_freq" android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="10 秒" android:textColor="@color/primary"
-                    android:textSize="@dimen/text_meta" android:textStyle="bold" />
-                <View android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/card_pad" android:background="@color/divider" />
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:text="@string/settings_music"
-                        android:textColor="@color/txt_primary" android:textSize="@dimen/text_label" />
-                    <Switch android:id="@+id/sw_music" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                </LinearLayout>
-                <View android:layout_width="match_parent" android:layout_height="1dp"
-                    android:layout_marginVertical="@dimen/card_pad" android:background="@color/divider" />
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical">
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:text="@string/settings_clipboard"
-                        android:textColor="@color/txt_primary" android:textSize="@dimen/text_label" />
-                    <Switch android:id="@+id/sw_clip" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                </LinearLayout>
+                android:orientation="horizontal" android:gravity="center_vertical">
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="图片背景轮播" android:textColor="@color/txt_primary" android:textSize="14sp" />
+                <Switch android:id="@+id/sw_bg" android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
-        </FrameLayout>
-
-        <FrameLayout android:id="@+id/card_clear_cache"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_gap"
-            android:background="@drawable/card_selector" android:padding="@dimen/card_pad">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="8dp" android:text="轮播间隔" android:textColor="@color/txt_secondary" android:textSize="11sp" />
+            <SeekBar android:id="@+id/sb_freq" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:max="5" android:progress="2" />
+            <TextView android:id="@+id/tv_freq" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="10 秒" android:textColor="@color/primary" android:textSize="11sp" android:textStyle="bold" />
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/card_pad" android:background="@color/divider" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:gravity="center_vertical">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="清理缓存"
-                    android:textColor="@color/txt_primary" android:textSize="@dimen/text_label" />
-                <TextView android:id="@+id/tv_cache_size" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="0 MB"
-                    android:textColor="@color/txt_secondary" android:textSize="@dimen/text_body_sm" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="背景音乐" android:textColor="@color/txt_primary" android:textSize="14sp" />
+                <Switch android:id="@+id/sw_music" android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
-        </FrameLayout>
-
-        <FrameLayout android:id="@+id/card_about"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_gap"
-            android:background="@drawable/card_selector" android:padding="@dimen/card_pad">
+            <View android:layout_width="match_parent" android:layout_height="1dp"
+                android:layout_marginVertical="@dimen/card_pad" android:background="@color/divider" />
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:orientation="horizontal" android:gravity="center_vertical">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:layout_weight="1" android:text="关于下载工具"
-                    android:textColor="@color/txt_primary" android:textSize="@dimen/text_label" />
-                <TextView android:id="@+id/tv_version" android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" android:text="v13.0"
-                    android:textColor="@color/txt_secondary" android:textSize="@dimen/text_body_sm" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                    android:text="监听剪贴板链接" android:textColor="@color/txt_primary" android:textSize="14sp" />
+                <Switch android:id="@+id/sw_clip" android:layout_width="wrap_content" android:layout_height="wrap_content" />
             </LinearLayout>
-        </FrameLayout>
+        </LinearLayout>
+        <LinearLayout android:id="@+id/card_clear_cache" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/card_gap" android:orientation="horizontal" android:gravity="center_vertical"
+            android:background="@drawable/card_selector" android:padding="@dimen/card_pad">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="清理缓存" android:textColor="@color/txt_primary" android:textSize="14sp" />
+            <TextView android:id="@+id/tv_cache_size" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="0 MB" android:textColor="@color/txt_secondary" android:textSize="12sp" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/card_about" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/card_gap" android:orientation="horizontal" android:gravity="center_vertical"
+            android:background="@drawable/card_selector" android:padding="@dimen/card_pad">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
+                android:text="关于下载工具" android:textColor="@color/txt_primary" android:textSize="14sp" />
+            <TextView android:id="@+id/tv_version" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="v16.0" android:textColor="@color/txt_secondary" android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

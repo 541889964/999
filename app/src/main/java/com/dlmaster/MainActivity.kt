@@ -24,31 +24,24 @@ import com.dlmaster.util.Prefs
 import com.dlmaster.view.AuroraBackgroundView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlin.random.Random
-
 class MainActivity : AppCompatActivity() {
-    private lateinit var bg1: ImageView
-    private lateinit var bg2: ImageView
+    private lateinit var bg1: ImageView; private lateinit var bg2: ImageView
     private lateinit var aurora: AuroraBackgroundView
-    private val bgHandler = Handler(Looper.getMainLooper())
-    private var currentBgIndex = -1
-    private var bgIds: IntArray = intArrayOf()
-    private var paused = false
-    private var useFirst = true
-    private var firstLoad = true
-
-    private val bgSwitchRunnable = object : Runnable {
+    private val handler = Handler(Looper.getMainLooper())
+    private var currentIdx = -1; private var ids: IntArray = intArrayOf()
+    private var paused = false; private var useFirst = true; private var firstLoad = true
+    private val runnable = object : Runnable {
         override fun run() {
             if (paused) return
-            switchNextBg()
-            bgHandler.postDelayed(this, Prefs.bgIntervalMs(this@MainActivity))
+            switchBg()
+            handler.postDelayed(this, Prefs.bgIntervalMs(this@MainActivity))
         }
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        bgIds = BackgroundList.RES_IDS
+        ids = BackgroundList.RES_IDS
         bg1 = findViewById(R.id.iv_bg1); bg2 = findViewById(R.id.iv_bg2)
         aurora = findViewById(R.id.aurora)
         PermissionHelper.requestNotifications(this)
@@ -63,75 +56,60 @@ class MainActivity : AppCompatActivity() {
             }
             try {
                 supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(
-                        android.R.anim.fade_in, android.R.anim.fade_out,
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out,
                         android.R.anim.fade_in, android.R.anim.fade_out)
-                    .replace(R.id.fragment_container, f)
-                    .commitAllowingStateLoss()
+                    .replace(R.id.fragment_container, f).commitAllowingStateLoss()
             } catch (_: Throwable) {}
             true
         }
         if (savedInstanceState == null) nav.selectedItemId = R.id.nav_home
-        if (!Prefs.noticeShown(this)) bgHandler.postDelayed({ showNotice() }, 1000)
+        if (!Prefs.noticeShown(this)) handler.postDelayed({ showNotice() }, 1000)
     }
-
     override fun onResume() {
-        super.onResume(); paused = false
-        aurora.resume()
+        super.onResume(); paused = false; aurora.resume()
         if (Prefs.bgEnabled(this)) {
-            bgHandler.removeCallbacks(bgSwitchRunnable)
-            switchNextBg()
-            bgHandler.postDelayed(bgSwitchRunnable, Prefs.bgIntervalMs(this))
+            handler.removeCallbacks(runnable); switchBg()
+            handler.postDelayed(runnable, Prefs.bgIntervalMs(this))
         } else { bg1.setImageDrawable(null); bg2.setImageDrawable(null) }
         if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) MusicPlayer.start(applicationContext)
     }
-
     override fun onPause() {
-        super.onPause(); paused = true
-        aurora.pause()
-        bgHandler.removeCallbacks(bgSwitchRunnable)
+        super.onPause(); paused = true; aurora.pause()
+        handler.removeCallbacks(runnable)
     }
-
-    private fun switchNextBg() {
-        if (bgIds.isEmpty() || !Prefs.bgEnabled(this)) return
-        val next: Int = if (bgIds.size == 1) 0 else {
+    private fun switchBg() {
+        if (ids.isEmpty() || !Prefs.bgEnabled(this)) return
+        val next: Int = if (ids.size == 1) 0 else {
             var n: Int
-            do { n = Random.nextInt(bgIds.size) } while (n == currentBgIndex)
+            do { n = Random.nextInt(ids.size) } while (n == currentIdx)
             n
         }
-        currentBgIndex = next
+        currentIdx = next
         val target = if (useFirst) bg1 else bg2
         val current = if (useFirst) bg2 else bg1
         try {
-            val fastOut = AnimationUtils.loadInterpolator(this, android.R.interpolator.fast_out_slow_in)
-            val linearOut = AnimationUtils.loadInterpolator(this, android.R.interpolator.linear_out_slow_in)
+            val fast = AnimationUtils.loadInterpolator(this, android.R.interpolator.fast_out_slow_in)
+            val linear = AnimationUtils.loadInterpolator(this, android.R.interpolator.linear_out_slow_in)
             if (firstLoad) {
-                Glide.with(applicationContext).load(bgIds[next])
+                Glide.with(applicationContext).load(ids[next])
                     .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
                     .diskCacheStrategy(DiskCacheStrategy.ALL).into(target)
-                target.alpha = 1f; current.alpha = 0f
-                firstLoad = false
+                target.alpha = 1f; current.alpha = 0f; firstLoad = false
             } else {
                 target.alpha = 0f
-                Glide.with(applicationContext).load(bgIds[next])
+                Glide.with(applicationContext).load(ids[next])
                     .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
                     .diskCacheStrategy(DiskCacheStrategy.ALL).into(target)
-                target.animate().withLayer().alpha(1f).setDuration(700)
-                    .setInterpolator(fastOut).start()
-                current.animate().withLayer().alpha(0f).setDuration(700)
-                    .setInterpolator(linearOut).start()
+                target.animate().withLayer().alpha(1f).setDuration(700).setInterpolator(fast).start()
+                current.animate().withLayer().alpha(0f).setDuration(700).setInterpolator(linear).start()
             }
             useFirst = !useFirst
         } catch (_: Throwable) {}
     }
-
     fun restartBgSchedule() {
-        bgHandler.removeCallbacks(bgSwitchRunnable)
-        paused = false
-        switchNextBg()
-        bgHandler.postDelayed(bgSwitchRunnable, Prefs.bgIntervalMs(this))
+        handler.removeCallbacks(runnable); paused = false; switchBg()
+        handler.postDelayed(runnable, Prefs.bgIntervalMs(this))
     }
-
     private fun showNotice() {
         try {
             val dlg = AlertDialog.Builder(this).create()
@@ -149,9 +127,5 @@ class MainActivity : AppCompatActivity() {
             } catch (_: Throwable) {}
         } catch (_: Throwable) {}
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        bgHandler.removeCallbacks(bgSwitchRunnable)
-    }
+    override fun onDestroy() { super.onDestroy(); handler.removeCallbacks(runnable) }
 }

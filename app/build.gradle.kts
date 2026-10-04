@@ -9,15 +9,21 @@ android {
         applicationId = "com.dlmaster"
         minSdk = 21
         targetSdk = 34
-        versionCode = 13
-        versionName = "13.0.0"
+        versionCode = 16
+        versionName = "16.0.0"
         vectorDrawables { useSupportLibrary = true }
     }
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("debug")
+    signingConfigs {
+        getByName("debug") {
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = false
+            enableV4Signing = false
         }
+    }
+    buildTypes {
+        release { isMinifyEnabled = false; signingConfig = signingConfigs.getByName("debug") }
+        debug { isMinifyEnabled = false; signingConfig = signingConfigs.getByName("debug") }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

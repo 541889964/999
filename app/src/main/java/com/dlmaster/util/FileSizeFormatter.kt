@@ -10,4 +10,6 @@ object FileSizeFormatter {
             else -> "$b B"
         }
     }
+    /** 给嗅探结果用的短格式:未知大小显示 --,小于 1KB 显示字节 */
+    fun fmtShort(b: Long): String = if (b <= 0) "--" else fmt(b)
 }

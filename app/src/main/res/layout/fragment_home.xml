@@ -1,129 +1,119 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:fillViewport="true" android:overScrollMode="never" android:scrollbars="none">
-
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical" android:padding="@dimen/edge"
-        android:paddingBottom="100dp">
+        android:paddingTop="@dimen/top_pad" android:paddingBottom="100dp">
 
-        <TextView android:id="@+id/tv_title"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/top_pad" android:text="@string/title_home"
-            android:textColor="@color/white" android:textSize="@dimen/text_title_xl"
-            android:textStyle="bold" android:letterSpacing="-0.02"
-            android:shadowColor="#CC000000" android:shadowDx="0" android:shadowDy="3" android:shadowRadius="10" />
-
-        <TextView android:id="@+id/tv_subtitle"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="4dp" android:text="@string/subtitle_home"
-            android:textColor="#F2FFFFFF" android:textSize="@dimen/text_subtitle"
-            android:shadowColor="#AA000000" android:shadowDx="0" android:shadowDy="1" android:shadowRadius="4" />
-
-        <FrameLayout android:id="@+id/card_input"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/card_glass"
-            android:padding="@dimen/card_pad">
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="@string/label_new_task" android:textColor="@color/txt_primary"
-                    android:textSize="@dimen/text_label" android:textStyle="bold" />
-                <EditText android:id="@+id/et_url"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/glass_input_selector"
-                    android:padding="12dp" android:hint="@string/hint_url"
-                    android:textColorHint="@color/txt_hint" android:textColor="@color/txt_primary"
-                    android:textSize="@dimen/text_body" android:inputType="textUri"
-                    android:maxLines="3" android:minHeight="@dimen/input_min_h" />
-                <com.google.android.material.button.MaterialButton android:id="@+id/btn_oneclick"
-                    style="@style/PillButton"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp" android:text="@string/btn_oneclick" />
-                <com.google.android.material.button.MaterialButton android:id="@+id/btn_analyze"
-                    style="@style/TextButton"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp" android:text="@string/btn_analyze"
-                    android:textSize="@dimen/text_body_sm" />
-            </LinearLayout>
-        </FrameLayout>
-
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_gap" android:orientation="horizontal" android:weightSum="3">
-            <FrameLayout android:id="@+id/card_browse"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginEnd="4dp"
-                android:background="@drawable/card_selector" android:padding="12dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="vertical" android:gravity="center">
-                    <ImageView android:layout_width="@dimen/icon_md" android:layout_height="@dimen/icon_md"
-                        android:src="@android:drawable/ic_menu_search" android:contentDescription="@null" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp" android:text="浏览网页"
-                        android:textColor="@color/txt_primary" android:textSize="@dimen/text_meta" />
-                </LinearLayout>
-            </FrameLayout>
-            <FrameLayout android:id="@+id/card_downloads"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginStart="4dp" android:layout_marginEnd="4dp"
-                android:background="@drawable/card_selector" android:padding="12dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="vertical" android:gravity="center">
-                    <ImageView android:layout_width="@dimen/icon_md" android:layout_height="@dimen/icon_md"
-                        android:src="@android:drawable/ic_menu_save" android:contentDescription="@null" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp" android:text="我的任务"
-                        android:textColor="@color/txt_primary" android:textSize="@dimen/text_meta" />
-                </LinearLayout>
-            </FrameLayout>
-            <FrameLayout android:id="@+id/card_sniff"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginStart="4dp"
-                android:background="@drawable/card_selector" android:padding="12dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="vertical" android:gravity="center">
-                    <ImageView android:layout_width="@dimen/icon_md" android:layout_height="@dimen/icon_md"
-                        android:src="@android:drawable/ic_menu_mylocation" android:contentDescription="@null" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp" android:text="已嗅探"
-                        android:textColor="@color/txt_primary" android:textSize="@dimen/text_meta" />
-                </LinearLayout>
-            </FrameLayout>
+        <LinearLayout android:id="@+id/card_greet" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:background="@drawable/card_glass" android:padding="18dp">
+            <TextView android:id="@+id/tv_greet" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="晚上好呀 🌙" android:textColor="@color/white" android:textSize="26sp"
+                android:textStyle="bold" android:letterSpacing="-0.02"
+                android:shadowColor="#99000000" android:shadowDx="0" android:shadowDy="2" android:shadowRadius="6" />
+            <TextView android:id="@+id/tv_sub_greet" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:text="慢慢来，一切都好" android:textColor="#CCFFFFFF" android:textSize="12sp" />
+            <TextView android:id="@+id/tv_quote" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" android:background="@drawable/quote_bg" android:padding="12dp"
+                android:text="♡  生活明朗，万物可爱" android:textColor="#E6FFFFFF" android:textSize="12sp" />
         </LinearLayout>
 
-        <FrameLayout android:id="@+id/card_music"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/card_gap"
-            android:background="@drawable/card_glass" android:padding="@dimen/card_pad">
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical">
-                    <ImageView android:layout_width="@dimen/icon_sm" android:layout_height="@dimen/icon_sm"
-                        android:src="@android:drawable/ic_media_play" android:contentDescription="@null" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:layout_weight="1" android:layout_marginStart="8dp"
-                        android:text="@string/label_music" android:textColor="@color/txt_primary"
-                        android:textSize="@dimen/text_label" android:textStyle="bold" />
-                    <ImageButton android:id="@+id/btn_music_toggle"
-                        android:layout_width="36dp" android:layout_height="36dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:src="@android:drawable/ic_media_play" android:contentDescription="@null" />
-                    <ImageButton android:id="@+id/btn_music_next"
-                        android:layout_width="36dp" android:layout_height="36dp"
-                        android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:src="@android:drawable/ic_media_next" android:contentDescription="@null" />
-                </LinearLayout>
-                <TextView android:id="@+id/tv_music_name"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp" android:text="@string/music_idle"
-                    android:textColor="@color/txt_secondary" android:textSize="@dimen/text_meta"
-                    android:ellipsize="middle" android:maxLines="1" />
+        <LinearLayout android:id="@+id/card_actions" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:orientation="horizontal" android:weightSum="3">
+            <LinearLayout android:id="@+id/btn_clip" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginEnd="4dp" android:orientation="vertical" android:gravity="center"
+                android:background="@drawable/card_selector" android:padding="16dp">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_edit" android:contentDescription="@null" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" android:text="剪贴板" android:textColor="@color/txt_primary" android:textSize="12sp" />
             </LinearLayout>
-        </FrameLayout>
+            <LinearLayout android:id="@+id/btn_sniff" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginStart="4dp" android:layout_marginEnd="4dp"
+                android:orientation="vertical" android:gravity="center"
+                android:background="@drawable/card_selector" android:padding="16dp">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_mylocation" android:contentDescription="@null" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" android:text="已嗅探" android:textColor="@color/txt_primary" android:textSize="12sp" />
+            </LinearLayout>
+            <LinearLayout android:id="@+id/btn_scan" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginStart="4dp" android:orientation="vertical" android:gravity="center"
+                android:background="@drawable/card_selector" android:padding="16dp">
+                <ImageView android:layout_width="24dp" android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_search" android:contentDescription="@null" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp" android:text="扫描网页" android:textColor="@color/txt_primary" android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/card_search" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:orientation="vertical" android:background="@drawable/card_glass" android:padding="14dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="下载链接" android:textColor="@color/txt_primary" android:textSize="14sp" android:textStyle="bold" />
+            <EditText android:id="@+id/et_url" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:background="@drawable/glass_input_selector" android:padding="14dp"
+                android:hint="@string/hint_url" android:textColorHint="@color/txt_hint" android:textColor="@color/txt_primary"
+                android:textSize="14sp" android:inputType="textUri" android:maxLines="3" android:minHeight="52dp" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_oneclick" style="@style/PillButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                android:text="一键极速下载" android:drawableStart="@android:drawable/ic_menu_save" android:drawablePadding="8dp" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_analyze" style="@style/TextButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp"
+                android:text="先分析是什么" android:textSize="12sp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/card_pagescan" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:orientation="vertical" android:background="@drawable/card_glass" android:padding="14dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="扫描网页找资源" android:textColor="@color/txt_primary" android:textSize="14sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" android:text="粘网页地址,自动列出视频/音频/文档/安装包等"
+                android:textColor="@color/txt_secondary" android:textSize="11sp" />
+            <EditText android:id="@+id/et_page_url" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:background="@drawable/glass_input_selector" android:pacdding="14dp"
+                android:padding="14dp" android:hint="@string/hint_page_url" android:textColorHint="@color/txt_hint"
+                android:textColor="@color/txt_primary" android:textSize="13sp" android:inputType="textUri" android:maxLines="2" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/btn_page_scan"
+                style="@style/PillButton"
+                android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+                android:text="@string/btn_sniff_page" android:drawableStart="@android:drawable/ic_menu_search" android:drawablePadding="8dp" />
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/card_music" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="12dp" android:orientation="horizontal" android:gravity="center_vertical"
+            android:background="@drawable/card_glass" android:padding="14dp">
+            <ImageView android:layout_width="20dp" android:layout_height="20dp"
+                android:src="@android:drawable/ic_media_play" android:contentDescription="@null" />
+            <TextView android:id="@+id/tv_music_name" android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:layout_marginStart="10dp" android:text="暂无音乐"
+                android:textColor="@color/txt_primary" android:textSize="13sp" android:ellipsize="middle" android:maxLines="1" />
+            <ImageButton android:id="@+id/btn_music_toggle" android:layout_width="36dp" android:layout_height="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_media_play" android:contentDescription="@null" />
+            <ImageButton android:id="@+id/btn_music_next" android:layout_width="36dp" android:layout_height="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_media_next" android:contentDescription="@null" />
+        </LinearLayout>
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="20dp" android:layout_marginStart="4dp" android:text="下载任务"
+            android:textColor="@color/white" android:textSize="18sp" android:textStyle="bold"
+            android:shadowColor="#99000000" android:shadowDx="0" android:shadowDy="2" android:shadowRadius="4" />
+
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_tasks"
+            android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"
+            android:nestedScrollingEnabled="false" android:overScrollMode="never"
+            android:clipToPadding="false" android:clipChildren="false" />
+
+        <LinearLayout android:id="@+id/layout_empty" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginTop="30dp" android:orientation="vertical" android:gravity="center">
+            <ImageView android:layout_width="72dp" android:layout_height="72dp"
+                android:src="@drawable/ic_empty_box" android:alpha="0.4" android:contentDescription="@null" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" android:text="还没有下载任务" android:textColor="@color/txt_secondary" android:textSize="13sp" />
+        </LinearLayout>
     </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+</ScrollView>

@@ -14,4 +14,11 @@
     <color name="txt_secondary">#FFAAB2C0</color>
     <color name="txt_hint">#FF8C94A8</color>
     <color name="divider">#1AFFFFFF</color>
+    <color name="tag_video">#FFFF6B6B</color>
+    <color name="tag_audio">#FFB980F0</color>
+    <color name="tag_image">#FFFFB86C</color>
+    <color name="tag_doc">#FF4DD0E1</color>
+    <color name="tag_archive">#FFFFD54F</color>
+    <color name="tag_apk">#FF69F0AE</color>
+    <color name="tag_other">#FFB0BEC5</color>
 </resources>

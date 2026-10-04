@@ -6,11 +6,7 @@ import com.dlmaster.util.CommandDownloader
 class ThunderActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            intent?.data?.toString()?.let {
-                CommandDownloader.oneClick(this, it, lifecycleScope) { _ -> }
-            }
-        } catch (_: Throwable) {}
+        try { intent?.data?.toString()?.let { CommandDownloader.oneClick(this, it, lifecycleScope) { _ -> } } } catch (_: Throwable) {}
         finish()
     }
 }
