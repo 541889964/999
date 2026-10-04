@@ -10,18 +10,15 @@ object PermissionHelper {
     fun requestBase(a: Activity) {
         val p = mutableListOf<String>()
         if (Build.VERSION.SDK_INT >= 33) {
-            if (ContextCompat.checkSelfPermission(a, Manifest.permission.READ_MEDIA_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) p += Manifest.permission.READ_MEDIA_AUDIO
+            if (ContextCompat.checkSelfPermission(a, Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) p += Manifest.permission.READ_MEDIA_AUDIO
         } else {
-            if (ContextCompat.checkSelfPermission(a, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) p += Manifest.permission.READ_EXTERNAL_STORAGE
+            if (ContextCompat.checkSelfPermission(a, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) p += Manifest.permission.READ_EXTERNAL_STORAGE
         }
         if (p.isNotEmpty()) try { ActivityCompat.requestPermissions(a, p.toTypedArray(), REQ) } catch (_: Throwable) {}
     }
     fun requestNotifications(a: Activity) {
         if (Build.VERSION.SDK_INT >= 33) {
-            if (ContextCompat.checkSelfPermission(a, "android.permission.POST_NOTIFICATIONS")
-                != PackageManager.PERMISSION_GRANTED)
+            if (ContextCompat.checkSelfPermission(a, "android.permission.POST_NOTIFICATIONS") != PackageManager.PERMISSION_GRANTED)
                 try { ActivityCompat.requestPermissions(a, arrayOf("android.permission.POST_NOTIFICATIONS"), REQ_N) } catch (_: Throwable) {}
         }
     }

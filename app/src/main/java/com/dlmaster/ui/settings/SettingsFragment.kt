@@ -25,8 +25,9 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(v: View, s: Bundle?) {
         val ctx = requireContext()
 
-        // 主题色
+        // ============ 主题色 ============
         val themeRow = v.findViewById<LinearLayout>(R.id.theme_row)
+        themeRow.removeAllViews()
         val current = ThemeManager.current(ctx)
         ThemeManager.ALL.forEach { th ->
             val dot = View(ctx).apply {
@@ -37,8 +38,11 @@ class SettingsFragment : Fragment() {
                 background = GradientDrawable().apply {
                     shape = GradientDrawable.OVAL
                     setColor(th.primary)
-                    if (th.key == current.key) setStroke((3 * resources.displayMetrics.density).toInt(), 0xFFFFFFFF.toInt())
-                    else setStroke((1 * resources.displayMetrics.density).toInt(), 0x40FFFFFF)
+                    if (th.key == current.key) {
+                        setStroke((3 * resources.displayMetrics.density).toInt(), 0xFFFFFFFF.toInt())
+                    } else {
+                        setStroke((1 * resources.displayMetrics.density).toInt(), 0x40FFFFFF)
+                    }
                 }
                 setOnClickListener {
                     ThemeManager.setCurrent(ctx, th.key)
@@ -48,32 +52,7 @@ class SettingsFragment : Fragment() {
             themeRow.addView(dot)
         }
 
-        // 布局模式
-        val btnList = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_layout_list)
-        val btnGrid = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_layout_grid)
-        val btnCompact = v.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_layout_compact)
-
-        fun updateLayoutBtn() {
-            val m = ThemeManager.layoutMode(requireContext())
-            fun setBtn(b: com.google.android.material.button.MaterialButton, active: Boolean) {
-                try {
-                    if (active) {
-                        b.setTextColor(0xFFFFFFFF.toInt())
-                        b.setBackgroundColor(ThemeManager.current(requireContext()).primary)
-                    } else {
-                        b.setTextColor(0xFFCCFFFFFF.toInt())
-                        b.setBackgroundColor(0x00000000)
-                    }
-                } catch (_: Throwable) {}
-            }
-            setBtn(btnList, m == "list"); setBtn(btnGrid, m == "grid"); setBtn(btnCompact, m == "compact")
-        }
-        updateLayoutBtn()
-        btnList.setOnClickListener { ThemeManager.setLayoutMode(requireContext(), "list"); updateLayoutBtn() }
-        btnGrid.setOnClickListener { ThemeManager.setLayoutMode(requireContext(), "grid"); updateLayoutBtn() }
-        btnCompact.setOnClickListener { ThemeManager.setLayoutMode(requireContext(), "compact"); updateLayoutBtn() }
-
-        // 帧率
+        // ============ 帧率 ============
         val sbFr = v.findViewById<SeekBar>(R.id.sb_framerate)
         val tvFr = v.findViewById<TextView>(R.id.tv_framerate_val)
         val frValues = intArrayOf(60, 90, 120)
@@ -91,16 +70,75 @@ class SettingsFragment : Fragment() {
             override fun onStopTrackingTouch(s: SeekBar?) {}
         })
 
-        // 开关
+        val swAdaptive = v.findViewById<Switch>(R.id.sw_adaptive_fr)
+        swAdaptive.isChecked = try { com.dlmaster.feature.Settings.adaptiveFrameRate() } catch (_: Throwable) { true }
+        swAdaptive.setOnCheckedChangeListener { _, c ->
+            try { com.dlmaster.feature.Settings.setAdaptiveFrameRate(c) } catch (_: Throwable) {}
+        }
+
+        // ============ 灵动岛开关组 ============
+        val swIsland = v.findViewById<Switch>(R.id.sw_island)
+        val swBatt = v.findViewById<Switch>(R.id.sw_island_batt)
+        val swTime = v.findViewById<Switch>(R.id.sw_island_time)
+        val swNet = v.findViewById<Switch>(R.id.sw_island_net)
+        val swTap = v.findViewById<Switch>(R.id.sw_island_tap)
+
+        swIsland.isChecked = try { com.dlmaster.feature.Settings.islandEnabled() } catch (_: Throwable) { false }
+        swBatt.isChecked = try { com.dlmaster.feature.Settings.islandShowBattery() } catch (_: Throwable) { true }
+        swTime.isChecked = try { com.dlmaster.feature.Settings.islandShowTime() } catch (_: Throwable) { true }
+        swNet.isChecked = try { com.dlmaster.feature.Settings.islandShowNet() } catch (_: Throwable) { true }
+        swTap.isChecked = try { com.dlmaster.feature.Settings.islandTapExpand() } catch (_: Throwable) { true }
+
+        swIsland.setOnCheckedChangeListener { _, c ->
+            try {
+                com.dlmaster.feature.Settings.setIslandEnabled(c)
+                val act = activity as? MainActivity
+                if (c) act?.startIsland() else act?.stopIsland()
+            } catch (_: Throwable) {}
+        }
+        swBatt.setOnCheckedChangeListener { _, c ->
+            try {
+                com.dlmaster.feature.Settings.setIslandShowBattery(c)
+                // 重启服务使设置生效
+                val act = activity as? MainActivity
+                if (act != null && com.dlmaster.feature.Settings.islandEnabled()) {
+                    act.stopIsland()
+                    v.postDelayed({ try { act.startIsland() } catch (_: Throwable) {} }, 400)
+                }
+            } catch (_: Throwable) {}
+        }
+        swTime.setOnCheckedChangeListener { _, c ->
+            try {
+                com.dlmaster.feature.Settings.setIslandShowTime(c)
+                val act = activity as? MainActivity
+                if (act != null && com.dlmaster.feature.Settings.islandEnabled()) {
+                    act.stopIsland()
+                    v.postDelayed({ try { act.startIsland() } catch (_: Throwable) {} }, 400)
+                }
+            } catch (_: Throwable) {}
+        }
+        swNet.setOnCheckedChangeListener { _, c ->
+            try {
+                com.dlmaster.feature.Settings.setIslandShowNet(c)
+                val act = activity as? MainActivity
+                if (act != null && com.dlmaster.feature.Settings.islandEnabled()) {
+                    act.stopIsland()
+                    v.postDelayed({ try { act.startIsland() } catch (_: Throwable) {} }, 400)
+                }
+            } catch (_: Throwable) {}
+        }
+        swTap.setOnCheckedChangeListener { _, c ->
+            try { com.dlmaster.feature.Settings.setIslandTapExpand(c) } catch (_: Throwable) {}
+        }
+
+        // ============ 基础开关 ============
         val swBg = v.findViewById<Switch>(R.id.sw_bg)
         val swMusic = v.findViewById<Switch>(R.id.sw_music)
         val swClip = v.findViewById<Switch>(R.id.sw_clip)
-        val swIsland = v.findViewById<Switch>(R.id.sw_island)
 
         swBg.isChecked = Prefs.bgEnabled(requireContext())
         swMusic.isChecked = Prefs.musicEnabled(requireContext())
         swClip.isChecked = Prefs.clipboardEnabled(requireContext())
-        swIsland.isChecked = try { com.dlmaster.feature.Settings.islandEnabled() } catch (_: Throwable) { false }
 
         swBg.setOnCheckedChangeListener { _, c ->
             Prefs.setBgEnabled(requireContext(), c)
@@ -108,15 +146,11 @@ class SettingsFragment : Fragment() {
         }
         swMusic.setOnCheckedChangeListener { _, c ->
             Prefs.setMusicEnabled(requireContext(), c)
-            if (c) MusicPlayer.start(requireContext().applicationContext) else MusicPlayer.stop()
+            if (c) MusicPlayer.start(requireContext().applicationContext)
+            else MusicPlayer.stop()
         }
-        swClip.setOnCheckedChangeListener { _, c -> Prefs.setClipboardEnabled(requireContext(), c) }
-        swIsland.setOnCheckedChangeListener { _, c ->
-            try {
-                com.dlmaster.feature.Settings.setIslandEnabled(c)
-                val act = activity as? MainActivity
-                if (c) act?.startIsland() else act?.stopIsland()
-            } catch (_: Throwable) {}
+        swClip.setOnCheckedChangeListener { _, c ->
+            Prefs.setClipboardEnabled(requireContext(), c)
         }
 
         v.findViewById<View>(R.id.card_clear_cache)?.setOnClickListener {

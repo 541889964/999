@@ -1,41 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 主色 -->
     <color name="primary">#FFB88FD8</color>
     <color name="primary_dark">#FF8E63B8</color>
     <color name="primary_light">#FFD8B8E8</color>
-    <color name="accent">#FFE8A0C8</color>
-
-    <!-- 背景 -->
+    <color name="accent">#FFE8A0F8</color>
     <color name="bg">#FF1A1020</color>
     <color name="white">#FFFFFFFF</color>
-
-    <!-- 玄音玻璃卡片 -->
-    <color name="glass_card">#33E8C8F0</color>
-    <color name="glass_card_strong">#4DE8C8F0</color>
-    <color name="glass_stroke">#40FFFFFF</color>
-    <color name="glass_stroke_soft">#26FFFFFF</color>
-
-    <!-- 文字 -->
+    <color name="ripple">#40FFFFFF</color>
+    <color name="glass_stroke">#80FFFFFF</color>
+    <color name="glass_high">#40FFFFFF</color>
+    <color name="glass_low">#15FFFFFF</color>
     <color name="txt_primary">#FFFAF5FF</color>
     <color name="txt_secondary">#CCE0D0F0</color>
     <color name="txt_hint">#99B8A8D0</color>
-
-    <!-- 分隔 -->
-    <color name="divider">#33FFFFFF</color>
-
-    <!-- 底栏 -->
-    <color name="nav_tint">#FFFFFFFF</color>
-    <color name="nav_tint_off">#66FFFFFF</color>
-    <color name="ripple">#33FFFFFF</color>
-    <color name="nav_bg">#40E8C8F0</color>
-
-    <!-- 类型标签 -->
-    <color name="tag_video">#FFFFB8B0</color>
-    <color name="tag_audio">#FFD8B8F0</color>
-    <color name="tag_image">#FFFFD8A8</color>
-    <color name="tag_doc">#FFB8E0F0</color>
-    <color name="tag_archive">#FFFFE8A0</color>
-    <color name="tag_apk">#FFB0F0C8</color>
-    <color name="tag_other">#FFD0D0D8</color>
+    <color name="divider">#1AFFFFFF</color>
+    <color name="tag_video">#FFFF6B6B</color>
+    <color name="tag_audio">#FFB980F0</color>
+    <color name="tag_image">#FFFFB86C</color>
+    <color name="tag_doc">#FF4DD0E1</color>
+    <color name="tag_archive">#FFFFD54F</color>
+    <color name="tag_apk">#FF69F0AE</color>
+    <color name="tag_stream">#FF52C7FF</color>
+    <color name="tag_other">#FFB0BEC5</color>
 </resources>

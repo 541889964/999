@@ -9,6 +9,8 @@ object MusicPlayer {
     private var player: MediaPlayer? = null
     private var tracks: List<File> = emptyList()
     private var currentIndex = -1
+    private var listener: (() -> Unit)? = null
+    fun setListener(l: () -> Unit) { listener = l }
     fun start(ctx: Context) {
         if (tracks.isEmpty()) rescan(ctx)
         if (tracks.isEmpty()) return
@@ -25,8 +27,8 @@ object MusicPlayer {
         tracks = list
     }
     fun next(ctx: Context) { playRandom() }
-    fun pause() { try { player?.takeIf { it.isPlaying }?.pause() } catch (_: Throwable) {} }
-    fun resume() { try { player?.start() } catch (_: Throwable) {} }
+    fun pause() { try { player?.takeIf { it.isPlaying }?.pause() } catch (_: Throwable) {}; listener?.invoke() }
+    fun resume() { try { player?.start() } catch (_: Throwable) {}; listener?.invoke() }
     fun isPlaying() = try { player?.isPlaying == true } catch (_: Throwable) { false }
     fun currentTrackName(): String? = if (currentIndex in tracks.indices) tracks[currentIndex].nameWithoutExtension else null
     fun stop() { try { player?.stop(); player?.release() } catch (_: Throwable) {}; player = null }
@@ -34,8 +36,7 @@ object MusicPlayer {
         if (tracks.isEmpty()) return
         val idx: Int = if (tracks.size == 1) 0 else {
             var n: Int
-            do { n = Random.nextInt(tracks.size) } while (n == currentIndex)
-            n
+            do { n = Random.nextInt(tracks.size) } while (n == currentIndex); n
         }
         currentIndex = idx
         try { player?.release() } catch (_: Throwable) {}
@@ -46,6 +47,7 @@ object MusicPlayer {
                 setOnErrorListener { _, _, _ -> true }
                 setVolume(0.7f, 0.7f); prepare(); start()
             }
+            listener?.invoke()
         } catch (_: Throwable) { player = null }
     }
 }

@@ -3,8 +3,5 @@
     <dimen name="edge">24dp</dimen>
     <dimen name="top_pad">40dp</dimen>
     <dimen name="text_title_xl">34sp</dimen>
-    <dimen name="text_title">24sp</dimen>
-    <dimen name="card_pad">20dp</dimen>
-    <dimen name="card_gap">14dp</dimen>
-    <dimen name="btn_h">52dp</dimen>
+    <dimen name="card_pad">22dp</dimen>
 </resources>

@@ -15,20 +15,15 @@ object Anim {
     @JvmStatic fun itemEnter(v: View, pos: Int) {
         v.alpha = 0f; v.translationY = 72f; v.scaleX = 0.90f; v.scaleY = 0.90f
         v.animate().alpha(1f).translationY(0f).scaleX(1f).scaleY(1f)
-            .setDuration(600).setStartDelay(kotlin.math.min(pos, 14) * 42L)
-            .setInterpolator(ITEM).start()
+            .setDuration(600).setStartDelay(kotlin.math.min(pos, 14) * 42L).setInterpolator(ITEM).start()
     }
     @JvmStatic fun press(v: View) {
         v.animate().scaleX(0.92f).scaleY(0.92f).setDuration(80)
-            .withEndAction {
-                v.animate().scaleX(1f).scaleY(1f).setDuration(320)
-                    .setInterpolator(PRESS).start()
-            }.start()
+            .withEndAction { v.animate().scaleX(1f).scaleY(1f).setDuration(320).setInterpolator(PRESS).start() }.start()
     }
     @JvmStatic fun rise(v: View, delay: Long = 0) {
         v.alpha = 0f; v.translationY = 14f
-        v.animate().alpha(1f).translationY(0f).setDuration(340)
-            .setStartDelay(delay).setInterpolator(RISE).start()
+        v.animate().alpha(1f).translationY(0f).setDuration(340).setStartDelay(delay).setInterpolator(RISE).start()
     }
     @JvmStatic fun stagger(views: Array<View?>, gap: Long = 70L) {
         views.forEachIndexed { i, v -> v?.let { enter(it, i * gap) } }
