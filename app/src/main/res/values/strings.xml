@@ -7,7 +7,7 @@
     <string name="nav_settings">设置</string>
     <string name="music_idle">暂无音乐</string>
     <string name="hint_url">粘贴链接 🔗 一键开跑</string>
-    <string name="hint_page_url">粘贴网页地址,自动找可下载的东西</string>
+    <string name="hint_page_url">粘贴网页地址，自动找可下载的东西</string>
     <string name="btn_sniff_page">扫描此页</string>
     <string name="sniff_title">发现了这些可下载的</string>
     <string name="sniff_sub">长按可复制链接 · 点一条直接开跑</string>
