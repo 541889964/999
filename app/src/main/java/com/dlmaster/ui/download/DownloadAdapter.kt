@@ -37,7 +37,7 @@ class DownloadAdapter(private val source: List<DownloadTask>) : RecyclerView.Ada
         val t = list()[pos]
         h.name.text = t.fileName
         h.sub.text = buildString {
-            append(t.strategy.displayName); append(" · ")
+            append(t.strategy.title); append(" · ")
             append(FileSizeFormatter.fmt(t.downloadedBytes)); append(" / "); append(FileSizeFormatter.fmt(t.totalBytes))
             if (t.speedBytesPerSec > 0 && t.status == DownloadTask.Status.RUNNING) { append(" · "); append(FileSizeFormatter.fmt(t.speedBytesPerSec)); append("/s") }
         }

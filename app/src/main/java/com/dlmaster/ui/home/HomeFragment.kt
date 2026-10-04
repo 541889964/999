@@ -1,4 +1,5 @@
 package com.dlmaster.ui.home
+
 import android.app.AlertDialog
 import android.content.ClipboardManager
 import android.content.Context
@@ -24,7 +25,6 @@ import com.dlmaster.download.SmartAnalyzer
 import com.dlmaster.sniffer.SniffRepository
 import com.dlmaster.sniffer.SniffedResource
 import com.dlmaster.sniffer.WebViewSniffer
-import com.dlmaster.sniffer.WebPageSniffer
 import com.dlmaster.ui.download.DownloadAdapter
 import com.dlmaster.util.CommandDownloader
 import com.dlmaster.util.FileSizeFormatter
@@ -34,19 +34,22 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.util.Calendar
+
 class HomeFragment : Fragment() {
+
     private var taskAdapter: DownloadAdapter? = null
+
     override fun onCreateView(i: LayoutInflater, c: ViewGroup?, s: Bundle?): View =
         i.inflate(R.layout.fragment_home, c, false)
+
     override fun onViewCreated(view: View, s: Bundle?) {
-        // 交错入场
         Anim.stagger(arrayOf(
             view.findViewById<View>(R.id.card_greet),
             view.findViewById<View>(R.id.card_actions),
             view.findViewById<View>(R.id.card_search),
             view.findViewById<View>(R.id.card_pagescan)
         ), 70L)
-        // 问候语
+
         val tvGreet = view.findViewById<TextView>(R.id.tv_greet)
         val tvSub = view.findViewById<TextView>(R.id.tv_sub_greet)
         when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
@@ -56,78 +59,88 @@ class HomeFragment : Fragment() {
             in 18..22 -> { tvGreet.text = "晚上好呀 🌙"; tvSub.text = "休息一下，让工具干活" }
             else -> { tvGreet.text = "夜深了 🌌"; tvSub.text = "早点睡，下载不用你盯" }
         }
+
         val et = view.findViewById<EditText>(R.id.et_url)
 
-        // 一键极速下载
         view.findViewById<MaterialButton>(R.id.btn_oneclick).setOnClickListener { v ->
             val t = et.text.toString().trim()
             if (t.isEmpty()) { Snackbar.make(view, "先粘个链接", Snackbar.LENGTH_SHORT).show(); return@setOnClickListener }
             Anim.press(v); vibrate()
-            val dlg = AlertDialog.Builder(requireContext()).setMessage("正在找最快的路…").setCancelable(false).create(); dlg.show()
-            try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent); val dm = resources.displayMetrics; dlg.window?.setLayout((dm.widthPixels * 0.7).toInt(), -2) } catch (_: Throwable) {}
+            val dlg = AlertDialog.Builder(requireContext()).setMessage("正在找最快的路…").setCancelable(false).create()
+            dlg.show()
+            try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent) } catch (_: Throwable) {}
             lifecycleScope.launch {
                 val r = try { SmartAnalyzer.analyze(t) } catch (_: Throwable) { null }
                 if (dlg.isShowing) dlg.dismiss()
-                if (r == null) Snackbar.make(view, "分析失败", Snackbar.LENGTH_SHORT).show()
-                else { CommandDownloader.launchWith(requireContext(), r, r.best); et.setText(""); refresh(); Snackbar.make(view, "已按「${r.best.displayName}」开跑", Snackbar.LENGTH_SHORT).show() }
+                when {
+                    r == null -> Snackbar.make(view, "分析失败", Snackbar.LENGTH_SHORT).show()
+                    r.isPage -> { Snackbar.make(view, "识别为网页,开始扫描", Snackbar.LENGTH_SHORT).show(); startScan(t) }
+                    else -> {
+                        CommandDownloader.launchWith(requireContext(), r, r.best)
+                        et.setText(""); refresh()
+                        Snackbar.make(view, "已按「${r.best.title}」开跑", Snackbar.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
 
-        // 先分析
         view.findViewById<MaterialButton>(R.id.btn_analyze).setOnClickListener { v ->
             val t = et.text.toString().trim()
             if (t.isEmpty()) { Snackbar.make(view, "先粘个链接", Snackbar.LENGTH_SHORT).show(); return@setOnClickListener }
             Anim.press(v); vibrate()
-            val dlg = AlertDialog.Builder(requireContext()).setMessage("分析中…").setCancelable(false).create(); dlg.show()
-            try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent); val dm = resources.displayMetrics; dlg.window?.setLayout((dm.widthPixels * 0.7).toInt(), -2) } catch (_: Throwable) {}
+            val dlg = AlertDialog.Builder(requireContext()).setMessage("分析中…").setCancelable(false).create()
+            dlg.show()
+            try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent) } catch (_: Throwable) {}
             lifecycleScope.launch {
                 val r = try { SmartAnalyzer.analyze(t) } catch (_: Throwable) { null }
                 if (dlg.isShowing) dlg.dismiss()
                 if (r == null) Snackbar.make(view, "分析失败", Snackbar.LENGTH_SHORT).show()
-                else showAnalyzeResult(r)
+                else if (r.isPage) startScan(t) else showAnalyzeResult(r)
             }
         }
 
-        // 剪贴板
         view.findViewById<View>(R.id.btn_clip).setOnClickListener { v ->
             Anim.press(v); vibrate()
             val cm = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = cm.primaryClip
-            val txt = if (clip != null && clip.itemCount > 0) clip.getItemAt(0).coerceToText(requireContext()).toString() else ""
-            if (txt.isNotEmpty()) { et.setText(txt); Snackbar.make(view, "已粘贴", Snackbar.LENGTH_SHORT).show() }
-            else Snackbar.make(view, "剪贴板为空", Snackbar.LENGTH_SHORT).show()
+            val raw = cm.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(requireContext())?.toString() ?: ""
+            if (raw.isNotEmpty()) {
+                et.setText(CommandDownloader.smartPaste(requireContext(), raw))
+                Snackbar.make(view, "已粘贴", Snackbar.LENGTH_SHORT).show()
+            } else Snackbar.make(view, "剪贴板为空", Snackbar.LENGTH_SHORT).show()
         }
 
-        // 已嗅探 → 展示缓存
         view.findViewById<View>(R.id.btn_sniff).setOnClickListener { v ->
             Anim.press(v); vibrate()
             val list = SniffRepository.items.toList()
-            if (list.isEmpty()) { Snackbar.make(view, "还没扫过任何页面", Snackbar.LENGTH_SHORT).show() }
-            else showSniffResult(list, "已嗅探的资源", null)
+            if (list.isEmpty()) Snackbar.make(view, "还没扫过页面", Snackbar.LENGTH_SHORT).show()
+            else showSniffResult(list)
         }
 
-        // 扫描网页
         view.findViewById<View>(R.id.btn_scan).setOnClickListener { v ->
             Anim.press(v); vibrate()
-            val etPage = view.findViewById<EditText>(R.id.et_page_url)
-            val url = etPage.text.toString().trim()
-            if (url.isEmpty()) { Snackbar.make(view, "先粘网页地址", Snackbar.LENGTH_SHORT).show(); return@setOnClickListener }
-            startScan(url)
+            val url = view.findViewById<EditText>(R.id.et_page_url).text.toString().trim()
+            if (url.isEmpty()) Snackbar.make(view, "先粘网页地址", Snackbar.LENGTH_SHORT).show()
+            else startScan(url)
         }
 
-        // 音乐
+        view.findViewById<MaterialButton>(R.id.btn_page_scan).setOnClickListener { v ->
+            Anim.press(v); vibrate()
+            val url = view.findViewById<EditText>(R.id.et_page_url).text.toString().trim()
+            if (url.isEmpty()) Snackbar.make(view, "先粘网页地址", Snackbar.LENGTH_SHORT).show()
+            else startScan(url)
+        }
+
         val tvMusic = view.findViewById<TextView>(R.id.tv_music_name)
         val btnT = view.findViewById<ImageButton>(R.id.btn_music_toggle)
         val btnN = view.findViewById<ImageButton>(R.id.btn_music_next)
-        fun rf() {
+        val rfMusic = {
             tvMusic.text = MusicPlayer.currentTrackName() ?: getString(R.string.music_idle)
             btnT.setImageResource(if (MusicPlayer.isPlaying()) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play)
         }
-        btnT.setOnClickListener { if (MusicPlayer.isPlaying()) MusicPlayer.pause() else MusicPlayer.resume(); rf() }
-        btnN.setOnClickListener { MusicPlayer.next(requireContext()); rf() }
-        rf()
+        btnT.setOnClickListener { if (MusicPlayer.isPlaying()) MusicPlayer.pause() else MusicPlayer.resume(); rfMusic() }
+        btnN.setOnClickListener { MusicPlayer.next(requireContext()); rfMusic() }
+        rfMusic()
 
-        // 内嵌任务列表
         val rv = view.findViewById<RecyclerView>(R.id.rv_tasks)
         RvOptimizer.config(rv, requireContext())
         rv.layoutManager = LinearLayoutManager(requireContext())
@@ -137,7 +150,6 @@ class HomeFragment : Fragment() {
         refresh()
     }
 
-    /** 扫描网页 */
     private fun startScan(pageUrl: String) {
         val dlg = AlertDialog.Builder(requireContext()).setCancelable(false).create()
         val v = layoutInflater.inflate(R.layout.dialog_sniff, null)
@@ -146,82 +158,54 @@ class HomeFragment : Fragment() {
         val tvCount = v.findViewById<TextView>(R.id.tv_sniff_count)
         val progress = v.findViewById<ProgressBar>(R.id.sniff_progress)
         val rv = v.findViewById<RecyclerView>(R.id.rv_sniff)
-        tvTitle.text = "正在扫描网页…"
-        tvCount.text = "抓取 HTML 中…"
+        tvTitle.text = "正在扫描…"
+        tvCount.text = "拉取页面 + 执行 JS 中"
+        progress.visibility = View.VISIBLE
+        progress.isIndeterminate = true
         RvOptimizer.config(rv, requireContext())
         rv.layoutManager = LinearLayoutManager(requireContext())
-        // 实时数据模型
         val live = ArrayList<SniffedResource>()
-        rv.adapter = SniffAdapter(live) { r -> pickAndDownload(r) }
-        v.findViewById<View>(R.id.btn_sniff_clear)?.setOnClickListener { live.clear(); rv.adapter?.notifyDataSetChanged() }
+        rv.adapter = SniffAdapter(live) { r -> pickAndDownload(r); dlg.dismiss() }
+        v.findViewById<View>(R.id.btn_sniff_clear)?.setOnClickListener {
+            live.clear(); rv.adapter?.notifyDataSetChanged()
+        }
         v.findViewById<View>(R.id.btn_sniff_close)?.setOnClickListener { dlg.dismiss() }
         dlg.show()
-        try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent); dlg.window?.setWindowAnimations(R.style.DialogAnim); val dm = resources.displayMetrics; dlg.window?.setLayout((dm.widthPixels * 0.95).toInt(), -2) } catch (_: Throwable) {}
+        try {
+            dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dlg.window?.setWindowAnimations(R.style.DialogAnim)
+            val dm = resources.displayMetrics
+            dlg.window?.setLayout((dm.widthPixels * 0.95).toInt(), (dm.heightPixels * 0.85).toInt())
+        } catch (_: Throwable) {}
 
-        // 启动端到端嗅探
-        lifecycleScope.launch {
-            scanWithWebView(pageUrl, dlg, tvTitle, tvCount, progress, rv, live)
-            }
-        }
-    }
-
-    private fun scanWithWebView(
-        pageUrl: String,
-        dlg: androidx.appcompat.app.AlertDialog,
-        tvTitle: TextView,
-        tvCount: TextView,
-        progress: ProgressBar,
-        rv: RecyclerView,
-        live: ArrayList<SniffedResource>
-    ) {
         val sniffer = WebViewSniffer(requireContext().applicationContext)
-        var lastUpdate = System.currentTimeMillis()
         sniffer.load(pageUrl) { resources ->
-            // WebView 完成
             try {
+                live.clear(); live.addAll(resources); rv.adapter?.notifyDataSetChanged()
+                progress.visibility = View.GONE
                 if (resources.isEmpty()) {
                     tvTitle.text = "没找到可下载的"
                     tvCount.text = "试试换个页面"
                 } else {
-                    live.clear()
-                    live.addAll(resources)
-                    rv.adapter?.notifyDataSetChanged()
-                    tvTitle.text = "发现了 ${resources.size} 个可下载的"
-                    tvCount.text = getString(com.dlmaster.R.string.sniff_sub)
-                    // 存入历史
+                    tvTitle.text = "发现了 ${resources.size} 个"
+                    tvCount.text = getString(R.string.sniff_sub)
                     SniffRepository.addAll(resources)
                 }
-                progress.visibility = View.GONE
             } catch (_: Throwable) {}
         }
-        // 30 秒超时保护
         view?.postDelayed({
             try {
                 if (progress.visibility == View.VISIBLE) {
                     progress.visibility = View.GONE
                     tvTitle.text = "扫描超时"
-                    tvCount.text = "页面可能太复杂，试试直接复制链接"
+                    tvCount.text = "试试直接复制下载链接"
                     sniffer.destroy()
                 }
             } catch (_: Throwable) {}
         }, 30000)
     }
-                },
-                onResource = { r ->
-                    // 每探测完一个就上列表(实时)
-                    live.add(r)
-                    rv.adapter?.notifyItemInserted(live.size - 1)
-                    tvTitle.text = "发现了这些可下载的 (${live.size})"
-                }
-            )
-            tvTitle.text = if (live.isEmpty()) "没找到可下载的资源" else "发现了这些可下载的 (${live.size})"
-            tvCount.text = if (live.isEmpty()) "试试换个页面,或页面需要登录" else getString(R.string.sniff_sub)
-            progress.visibility = View.GONE
-        }
-    }
 
     private fun pickAndDownload(r: SniffedResource) {
-        // 从嗅探结果直接开跑
         val strategy = when {
             r.isHls -> DownloadStrategy.HLS
             r.isDash -> DownloadStrategy.DASH
@@ -234,29 +218,34 @@ class HomeFragment : Fragment() {
         refresh()
     }
 
-    private fun showSniffResult(list: List<SniffedResource>, title: String, progressBar: ProgressBar?) {
+    private fun showSniffResult(list: List<SniffedResource>) {
         val dlg = AlertDialog.Builder(requireContext()).create()
         val root = layoutInflater.inflate(R.layout.dialog_sniff, null)
         dlg.setView(root)
-        root.findViewById<TextView>(R.id.tv_sniff_title).text = title
-        root.findViewById<TextView>(R.id.tv_sniff_count).text = "共 ${list.size} 个 · 点一条直接开跑"
-        progressBar?.visibility = View.GONE
+        root.findViewById<TextView>(R.id.tv_sniff_title).text = "已嗅探的资源"
+        root.findViewById<TextView>(R.id.tv_sniff_count).text = "共 ${list.size} 个"
         root.findViewById<ProgressBar>(R.id.sniff_progress).visibility = View.GONE
         val rv = root.findViewById<RecyclerView>(R.id.rv_sniff)
         RvOptimizer.config(rv, requireContext())
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = SniffAdapter(list) { r -> pickAndDownload(r); dlg.dismiss() }
         root.findViewById<View>(R.id.btn_sniff_clear)?.setOnClickListener {
-            SniffRepository.clearAll(); dlg.dismiss(); Snackbar.make(requireView(), "已清空", Snackbar.LENGTH_SHORT).show()
+            SniffRepository.clearAll(); dlg.dismiss()
         }
         root.findViewById<View>(R.id.btn_sniff_close)?.setOnClickListener { dlg.dismiss() }
         dlg.show()
-        try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent); dlg.window?.setWindowAnimations(R.style.DialogAnim); val dm = resources.displayMetrics; dlg.window?.setLayout((dm.widthPixels * 0.95).toInt(), -2) } catch (_: Throwable) {}
+        try {
+            dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dlg.window?.setWindowAnimations(R.style.DialogAnim)
+            val dm = resources.displayMetrics
+            dlg.window?.setLayout((dm.widthPixels * 0.95).toInt(), (dm.heightPixels * 0.85).toInt())
+        } catch (_: Throwable) {}
     }
 
     private fun showAnalyzeResult(r: AnalyzeResult) {
         val dlg = AlertDialog.Builder(requireContext()).create()
-        val root = layoutInflater.inflate(R.layout.dialog_analyze, null); dlg.setView(root)
+        val root = layoutInflater.inflate(R.layout.dialog_analyze, null)
+        dlg.setView(root)
         root.findViewById<TextView>(R.id.tv_dlg_title).text = "分析好了"
         root.findViewById<TextView>(R.id.tv_dlg_sub).text = "给你挑了条最快的路"
         root.findViewById<TextView>(R.id.tv_dlg_type).text = "链接类型：${r.kind.label}"
@@ -266,17 +255,24 @@ class HomeFragment : Fragment() {
             if (r.speedHint.isNotEmpty()) { append("\n"); append(r.speedHint) }
             if (r.note.isNotEmpty()) { append("\n"); append(r.note) }
         }
-        root.findViewById<TextView>(R.id.tv_dlg_best).text = "推荐「${r.best.displayName}」\n${r.best.blurb}"
+        root.findViewById<TextView>(R.id.tv_dlg_best).text = "推荐「${r.best.title}」\n${r.best.desc}"
         val choices = (listOf(r.best) + r.alternatives).distinctBy { it.key }
         var sel = r.best
         val rv = root.findViewById<RecyclerView>(R.id.rv_strategy)
         RvOptimizer.config(rv, requireContext())
         rv.layoutManager = LinearLayoutManager(requireContext())
-        rv.adapter = StrategyAdapter(choices, r.best) { sel = it }
+        rv.adapter = StrategyAdapter(choices, r.best) { s -> sel = s }
         root.findViewById<MaterialButton>(R.id.btn_cancel).setOnClickListener { dlg.dismiss() }
-        root.findViewById<MaterialButton>(R.id.btn_start).setOnClickListener { dlg.dismiss(); CommandDownloader.launchWith(requireContext(), r, sel); refresh() }
+        root.findViewById<MaterialButton>(R.id.btn_start).setOnClickListener {
+            dlg.dismiss(); CommandDownloader.launchWith(requireContext(), r, sel); refresh()
+        }
         dlg.show()
-        try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent); dlg.window?.setWindowAnimations(R.style.DialogAnim); val dm = resources.displayMetrics; dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), -2) } catch (_: Throwable) {}
+        try {
+            dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dlg.window?.setWindowAnimations(R.style.DialogAnim)
+            val dm = resources.displayMetrics
+            dlg.window?.setLayout((dm.widthPixels * 0.92).toInt(), (dm.heightPixels * 0.82).toInt())
+        } catch (_: Throwable) {}
     }
 
     private fun refresh() {
@@ -289,26 +285,72 @@ class HomeFragment : Fragment() {
 
     private fun vibrate() {
         try {
-            val v = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
-            if (android.os.Build.VERSION.SDK_INT >= 26) v.vibrate(android.os.VibrationEffect.createOneShot(12, 40))
-            else { @Suppress("DEPRECATION") v.vibrate(12) }
+            val vib = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+            if (android.os.Build.VERSION.SDK_INT >= 26)
+                vib.vibrate(android.os.VibrationEffect.createOneShot(12, 40))
+            else { @Suppress("DEPRECATION") vib.vibrate(12) }
         } catch (_: Throwable) {}
     }
 }
-class StrategyAdapter(private val items: List<DownloadStrategy>, def: DownloadStrategy, private val onSel: (DownloadStrategy) -> Unit) : RecyclerView.Adapter<StrategyAdapter.VH>() {
+
+class StrategyAdapter(
+    private val items: List<DownloadStrategy>,
+    def: DownloadStrategy,
+    private val onSel: (DownloadStrategy) -> Unit
+) : RecyclerView.Adapter<StrategyAdapter.VH>() {
     private var selKey = def.key
     class VH(v: View) : RecyclerView.ViewHolder(v) {
         val box: android.widget.LinearLayout = v.findViewById(R.id.strategy_box)
         val name: TextView = v.findViewById(R.id.tv_s_name)
         val desc: TextView = v.findViewById(R.id.tv_s_desc)
     }
-    override fun onCreateViewHolder(p: ViewGroup, t: Int): VH = VH(LayoutInflater.from(p.context).inflate(R.layout.item_strategy, p, false))
+    override fun onCreateViewHolder(p: ViewGroup, t: Int): VH =
+        VH(LayoutInflater.from(p.context).inflate(R.layout.item_strategy, p, false))
     override fun getItemCount() = items.size
     override fun onBindViewHolder(h: VH, pos: Int) {
         val s = items[pos]
-        h.name.text = s.displayName; h.desc.text = s.blurb
+        h.name.text = s.title
+        h.desc.text = s.desc
         h.box.setBackgroundResource(if (s.key == selKey) R.drawable.strategy_item_selected else R.drawable.strategy_item_bg)
-        h.box.setOnClickListener { selKey = s.key; onSel(s); notifyDataSetChanged(); Anim.press(h.box) }
+        h.box.setOnClickListener {
+            selKey = s.key; onSel(s); notifyDataSetChanged(); Anim.press(h.box)
+        }
+        Anim.itemEnter(h.itemView, pos)
+    }
+}
+
+class SniffAdapter(
+    private val items: List<SniffedResource>,
+    private val onPick: (SniffedResource) -> Unit
+) : RecyclerView.Adapter<SniffAdapter.VH>() {
+    class VH(v: View) : RecyclerView.ViewHolder(v) {
+        val kind: TextView = v.findViewById(R.id.tv_sniff_kind)
+        val name: TextView = v.findViewById(R.id.tv_sniff_name)
+        val size: TextView = v.findViewById(R.id.tv_sniff_size)
+        val detail: TextView = v.findViewById(R.id.tv_sniff_detail)
+        val url: TextView = v.findViewById(R.id.tv_sniff_url)
+    }
+    override fun onCreateViewHolder(p: ViewGroup, t: Int): VH =
+        VH(LayoutInflater.from(p.context).inflate(R.layout.item_sniff, p, false))
+    override fun getItemCount() = items.size
+    override fun onBindViewHolder(h: VH, pos: Int) {
+        val r = items[pos]
+        h.kind.text = r.kind.display
+        h.kind.setTextColor(when (r.kind) {
+            SniffedResource.Kind.VIDEO -> 0xFFFF6B6B.toInt()
+            SniffedResource.Kind.AUDIO -> 0xFFB980F0.toInt()
+            SniffedResource.Kind.IMAGE -> 0xFFFFB86C.toInt()
+            SniffedResource.Kind.DOCUMENT -> 0xFF4DD0E1.toInt()
+            SniffedResource.Kind.ARCHIVE -> 0xFFFFD54F.toInt()
+            SniffedResource.Kind.APK -> 0xFF69F0AE.toInt()
+            SniffedResource.Kind.STREAM -> 0xFF52C7FF.toInt()
+            else -> 0xFFB0BEC5.toInt()
+        })
+        h.name.text = if (r.label.isNotBlank() && r.fileName.length < 8) r.label else r.fileName
+        h.size.text = FileSizeFormatter.fmtShort(r.size)
+        h.detail.text = r.detailText()
+        h.url.text = r.url
+        h.itemView.setOnClickListener { onPick(r) }
         Anim.itemEnter(h.itemView, pos)
     }
 }
