@@ -53,4 +53,10 @@ object Settings {
 
     fun confirmDownload(): Boolean = prefs()?.getBoolean(K_CONFIRM_DL, false) ?: false
     fun setConfirmDownload(v: Boolean) { prefs()?.edit()?.putBoolean(K_CONFIRM_DL, v)?.apply() }
+
+    fun frameRate(): Int = prefs()?.getInt("frame_rate", 60) ?: 60
+    fun setFrameRate(v: Int) { prefs()?.edit()?.putInt("frame_rate", v)?.apply() }
+
+    fun themeColor(): Int = prefs()?.getInt("theme_color", 0xFFB88FD8.toInt()) ?: 0xFFB88FD8.toInt()
+    fun setThemeColor(v: Int) { prefs()?.edit()?.putInt("theme_color", v)?.apply() }
 }

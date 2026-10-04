@@ -1,41 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="14dp">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:orientation="vertical" android:padding="22dp"
-        android:background="@drawable/dialog_panel">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF1A1020">
+
+    <!-- 顶部粉紫光晕 -->
+    <View android:layout_width="match_parent" android:layout_height="280dp"
+        android:background="@drawable/notice_top_glow" />
+
+    <com.dlmaster.view.ParticleView
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:alpha="0.4" />
+
+    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical" android:paddingStart="24dp" android:paddingEnd="24dp"
+        android:paddingTop="60dp" android:paddingBottom="30dp">
+
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical">
-            <FrameLayout android:layout_width="46dp" android:layout_height="46dp">
-                <View android:layout_width="46dp" android:layout_height="46dp" android:background="@drawable/halo_ring" />
-                <View android:layout_width="28dp" android:layout_height="28dp" android:layout_gravity="center" android:background="@drawable/halo_core" />
+            <FrameLayout android:layout_width="56dp" android:layout_height="56dp">
+                <View android:layout_width="56dp" android:layout_height="56dp"
+                    android:background="@drawable/halo_ring" />
+                <View android:layout_width="36dp" android:layout_height="36dp"
+                    android:layout_gravity="center" android:background="@drawable/halo_core" />
             </FrameLayout>
-            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                android:layout_weight="1" android:layout_marginStart="14dp"
-                android:orientation="vertical">
+            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:layout_marginStart="16dp" android:orientation="vertical">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="说点心里话" android:textColor="@color/txt_primary"
-                    android:textSize="18sp" android:textStyle="bold" />
+                    android:text="说点心里话" android:textColor="@color/white"
+                    android:textSize="24sp" android:textStyle="bold"
+                    android:shadowColor="#66000000" android:shadowDx="0"
+                    android:shadowDy="2" android:shadowRadius="8" />
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp" android:text="第一次打开，想跟你聊聊"
-                    android:textColor="@color/txt_secondary" android:textSize="11sp" />
+                    android:layout_marginTop="4dp" android:text="第一次打开，想跟你聊聊"
+                    android:textColor="#CCE8D8F8" android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
 
-        <ScrollView android:layout_width="match_parent" android:layout_height="360dp"
-            android:layout_marginTop="16dp"
+        <View android:layout_width="match_parent" android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/dialog_divider" />
+
+        <ScrollView android:layout_width="match_parent" android:layout_height="0dp"
+            android:layout_weight="1" android:layout_marginTop="20dp"
             android:overScrollMode="never" android:scrollbars="none">
             <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:textColor="@color/txt_primary" android:textSize="13sp"
-                android:lineSpacingExtra="7dp"
-                android:text="下载工具从第一行代码到现在，算起来也快一年了。我们从没想过把它做得多花哨，也没想过要教谁怎么用。想做的事，从始至终只有一件——让你少折腾，让文件自己下来。\n\n你有没有过这种时候。网上看到一个软件的下载链接，点进去，跳五次页面，注册两次账号，最后还是没下成。或者辛辛苦苦找到的磁力链接，扔进某个客户端里转了半小时，进度条纹丝不动，硬盘咔咔响但一个字节没下来。又或者下到一半断网了，回来发现要从头再来，那个 3GB 的安装包，一切归零。这些事我们全都遇到过，烦过，气过，也骂过。所以我们凑在一起，把能做的都做了。能支持的分段都支持，能试的镜像都试，能在网络烂的时候替你重试的，就不让你自己按。\n\n这个工具里有多少东西你其实不需要知道，但我们还是想告诉你。先说最基础的。一个文件，如果服务器允许，我们会切成很多段同时下，哪一段先回来先写盘，先到的先占位置。如果服务器不允许分段，那就老老实实单线程拉，不硬来，不假装自己很厉害。如果是个磁力链接，我们先看看种子健不健康，做种的人多不多，不健康的就慢慢磨，健康的就跑满带宽。如果是网盘分享，我们先试着直连，直连不行再看有没有别的路。如果是视频站点那种 m3u8 分片流，我们就一片一片下完再合并成一个完整的文件，不用你手动操作。如果是加密的流，我们识别到就跳过，不浪费你时间。这些判断，都在你点下开始之后半秒内完成，你看到的只是一个进度条和速度数字。\n\n我们没打算骗你。这个工具不会突破你家宽带的物理带宽——那条线的速度是运营商定的，谁也突破不了，说能突破的都是骗子。它也不会破解任何会员的加速通道——那是别人的服务器，别人出的钱，凭什么给你白用。它更不会绕过网站的安全验证，因为那是红线，我们不做，这辈子都不会做。它能做的，是把你的物理带宽用满，是在服务器允许的范围内用最多的连接，是在网络抖动的时候自己重试不用你管，是把一个小文件排在前面下完给后面的大文件腾地方，是把一个大文件切成几十份同时推进，是把失败的片段精准重下而不动已经完成的部分。这些都在灰色地带的边缘老老实实走路，不越线，不耍花招。\n\n有人说这类工具都一个样。不是的。一样的东西是接口，是线程数，是能不能续传——这些是基本功，谁都会。不一样的是手感。你按下按钮的那一下，它会给你一点回弹，让你知道它听见了。列表进来的时候，一项一项地落下来，不是唰地一下全出现，让你眼睛跟不上。背景会呼吸，会缓慢地变色，会有一粒一粒的光点往上飘，因为一直盯着静态的界面，人会很累。切换页面的时候不是硬切，是淡出淡入，让你有个心理准备。弹窗打开的时候不是突然出现，是从小变大带一点回弹。这些细节对你来说可能只是还行，但对我们来说，是调了几十遍参数之后的结果。\n\n关于界面，我们借鉴了极光背景和一些物理动画的思路。底色其实是你的壁纸，上面盖了几层缓慢游动的彩色光斑，透明度调得很低，肉眼几乎看不出来。它们每秒移动大概两三个像素，你要盯着看才会发现它在动。还有一些微小的粒子往上飘，就像安静的房间里空气里的尘埃。为什么要这么做？因为屏幕如果长时间不动，眼睛会累；动得太快，又会晕。这种几乎没有速度的运动，是唯一不打扰你的方式。有人可能觉得这是花哨，但请你用一天试试，会觉得少了点什么。\n\n我们不做会员，不搞什么尊享加速。所有的下载策略，全部开放给你。想做多线程就多线程，想伪装请求就伪装请求，想要严格分块校验就严格分块，想用 64 线程硬刚就用 64 线程。这些选项摆在先分析是什么里面，你点一下就能看到所有的路，看到每条路的说明，自己挑。我们不觉得用户需要被保护在简单模式里，你有权知道工具在替你做什么决定，也有权自己改。\n\n关于隐私，我们说清楚。这个工具不收集你的任何下载记录，不上传你的链接，不读取你的通讯录，不调用你的摄像头，不在你睡觉的时候偷偷联网。它要的权限只有：网络访问，用来下载；存储读写，用来存文件；通知权限，用来告诉你下载完了；还有播放音乐需要的媒体权限。多一个都不要。你可以在系统设置里随时收回任何一个权限，除了不能下载之外，其他功能都还能用。\n\n我们还做了一件很多人没想到的事。你把网页链接贴进来，点扫描，它会拉取那个页面的 HTML，然后用八种策略挖出所有能下的东西——视频标签、音频标签、a 标签、iframe、预加载链接、meta 标记里的媒体地址、脚本里的 m3u8 字符串、以及 HTML 里直接出现的裸 URL。每一条都单独发 HEAD 请求去问服务器：你是什么类型，你多大，你支不支持 Range 分段。然后把结果显示成一张张卡片，视频、音频、图片、文档、压缩包、安装包、流媒体，八种类型用不同颜色标出。你点哪一条，它就按最佳策略开跑。这个功能在视频站点和资源分享站上特别有用，因为你不用右键另存为，不用找下载按钮藏在哪，不用对付那些一层套一层的跳转。\n\n我们也不打算强推任何东西。没有开屏广告，没有弹窗推荐，没有首页塞满热搜和排行榜。首页就是你最常做的事：粘链接，一键下载。其他功能都在顺手的位置，不打扰你。你想安安静静下一次，就安安静静下一次。\n\n说实话，做这个工具的过程中我们也收到过不少质疑。有人说免费的东西怎么可能好用，肯定有后门。有人说就几个人做的垃圾，比不过大厂。有人说这功能那功能都是抄的。这些话我们都看得到。我们的回答很简单：代码是开源的，你随时可以自己编译一份，看看里面有没有后门。功能确实都是从各个开源项目里学的，这有什么好藏着的，互联网本来就是互相借鉴。至于比不过大厂——是的，我们确实比不过。但大厂要养几千人，要交几十亿税，要哄投资人开心，我们不用。我们只要让你下东西的时候顺手一点，就够了。\n\n关于速度，我还要多说几句。我们内部做过大量测试。在同一个文件上，我们把线程从 1 调到 64，发现速度在 16 到 32 之间到达拐点，再往上就基本没有提升了。原因很简单，你家的宽带就那么大，物理上限摆在那里。所以我们的策略是，对小于 20MB 的文件用 8 线程，对大于 200MB 的文件用 32 线程，中间的按需自适应。不是为了跑分好看，是为了让你等的时间最短。\n\n关于断点续传，我们做了比其他工具更狠的版本。如果你下到一半 App 被系统杀了，或者手机没电关机，下次打开 App 的时候它会自动识别出未完成的任务，标为失败状态，但你点一下重试，它会从已经写盘的位置继续，不用从零开始。原理是我们把每一段完成的范围记在临时文件里，续传时按记录跳过已完成的部分。\n\n关于失败重试，我们对每个分段都做了 5 次重试，每次间隔 300ms、600ms、900ms、1200ms、1500ms，呈线性退避。因为网络抖动通常是短时的，几次重试大概率能过去。如果 5 次都失败，我们才整段标记为失败。这样你不需要盯着手机等重试成功，睡着的时候它自己就跑完了。\n\n关于 HLS 和 DASH，这两个是视频站点最常用的分片流。HLS 是苹果系的，DASH 是国际标准。两者的共同点是把一个视频切成几百上千个小片段，每个片段几秒钟。我们的做法是先把索引文件拉下来，解析出所有片段的地址，然后按顺序一条一条下载，每下一个就往输出文件里追加。下载完的片段如果只是索引变更（比如直播），不会重复下载。等全部完成，你会得到一个完整的 .ts 文件，直接能播。\n\n关于音乐播放，你手机里如果有 Music 目录下的音乐，App 会自动扫描并随机播放。播放完一首自动换下一首，随机不重复。你可以在首页的音乐卡片里控制播放暂停和切歌。这个功能跟下载没关系，就是加个小彩蛋，让 App 打开的时候不至于太安静。\n\n关于背景轮播，默认是每 10 秒换一张，从你放在「图标」目录里的图片轮换。它在切换时会用两层 ImageView 做交叉淡入，避免黑屏闪一下。你可以在设置里把间隔改成 3 秒、5 秒、10 秒、20 秒、30 秒、60 秒。如果觉得太烦，可以直接关掉，背景会显示为纯色。\n\n最后，说点掏心窝子的话。这个东西不是商品，没有 KPI 要完成，没有投资人要看报表，没有下个月要发的工资等着。就是几个人觉得现有的下载工具要么太丑，要么太慢，要么太商业，要么太臃肿，于是自己攒了一个。你能用上，就是它存在的意义。用着不顺，长按任务截个图发给我们，我们会看，会改。用得顺手，就推荐给身边的人——这比任何广告都强。\n\n欢迎回来。下载愉快。\n\n—— 下载工具团队" />
+                android:textColor="#F0E8F8FF" android:textSize="14sp"
+                android:lineSpacingExtra="9dp"
+                android:text="下载工具从第一行代码到现在，算起来也快一年了。我们从没想过把它做得多花哨，也没想过要教谁怎么用。想做的事，从始至终只有一件——让你少折腾，让文件自己下来。\n\n你有没有过这种时候。网上看到一个软件的下载链接，点进去，跳五次页面，注册两次账号，最后还是没下成。或者辛辛苦苦找到的磁力链接，扔进某个客户端里转了半小时，进度条纹丝不动，硬盘咔咔响但一个字节没下来。又或者下到一半断网了，回来发现要从头再来，那个 3GB 的安装包，一切归零。这些事我们全都遇到过，烦过，气过，也骂过。所以我们凑在一起，把能做的都做了。能支持的分段都支持，能试的镜像都试，能在网络烂的时候替你重试的，就不让你自己按。\n\n这个工具里有多少东西你其实不需要知道，但我们还是想告诉你。先说最基础的。一个文件，如果服务器允许，我们会切成很多段同时下，哪一段先回来先写盘。如果服务器不允许分段，那就老老实实单线程拉，不硬来。如果是个磁力链接，我们先看看种子健不健康，做种的人多不多，不健康的就慢慢磨，健康的就跑满带宽。如果是网盘分享，我们先试着直连，直连不行再看有没有别的路。如果是视频站点那种 m3u8 分片流，我们就一片一片下完再合并。\n\n我们没打算骗你。这个工具不会突破你家宽带的物理带宽——那条线的速度是运营商定的，谁也突破不了。它也不会破解任何会员的加速通道——那是别人的服务器，别人出的钱，凭什么给你白用。它更不会绕过网站的安全验证，因为那是红线，我们不做。它能做的，是把你的物理带宽用满，是在服务器允许的范围内用最多的连接，是在网络抖动的时候自己重试不用你管，是把失败的片段精准重下而不动已经完成的部分。\n\n有人说这类工具都一个样。不是的。一样的东西是接口，是线程数，是能不能续传——这些是基本功。不一样的是手感。你按下按钮的那一下，它会给你一点回弹，让你知道它听见了。列表进来的时候，一项一项地落下来。背景会呼吸，会缓慢地变色，会有一粒一粒的光点往上飘，因为一直盯着静态的界面，人会很累。切换页面的时候不是硬切，是淡出淡入。弹窗打开的时候是从小变大带一点回弹。这些细节对你来说可能只是还行，但对我们来说，是调了几十遍参数之后的结果。\n\n关于界面，我们借鉴了 iOS 液态玻璃和物理动画的思路。卡片是半透明的白玻璃带高光边，在你深色的壁纸上会透出壁纸的颜色。底色其实是你的壁纸，上面盖了几层缓慢游动的彩色光斑。还有微小的粒子往上飘。为什么要这么做？因为屏幕如果长时间不动，眼睛会累；动得太快，又会晕。\n\n我们不做会员，不搞什么尊享加速。所有的下载策略，全部开放给你。想做多线程就多线程，想伪装请求就伪装请求，想要严格分块校验就严格分块，想用 64 线程硬刚就用 64 线程。这些选项摆在先分析是什么里面，你点一下就能看到所有的路。\n\n关于隐私，我们说清楚。这个工具不收集你的任何下载记录，不上传你的链接，不读取你的通讯录，不调用你的摄像头，不在你睡觉的时候偷偷联网。它要的权限只有：网络访问，用来下载；存储读写，用来存文件；通知权限；悬浮窗权限，用来显示灵动岛；还有播放音乐需要的媒体权限。\n\n最后，说点掏心窝子的话。这个东西不是商品，没有 KPI 要完成，没有投资人要看报表。就是几个人觉得现有的下载工具要么太丑，要么太慢，要么太商业，要么太臃肿，于是自己攒了一个。你能用上，就是它存在的意义。用着不顺，长按任务截个图发给我们，我们会看，会改。用得顺手，就推荐给身边的人——这比任何广告都强。\n\n欢迎回来。下载愉快。\n\n—— 下载工具团队" />
         </ScrollView>
 
         <com.google.android.material.button.MaterialButton android:id="@+id/btn_notice_ok"
-            android:layout_width="match_parent" android:layout_height="48dp"
-            android:layout_marginTop="16dp"
+            android:layout_width="match_parent" android:layout_height="52dp"
+            android:layout_marginTop="20dp"
             android:text="知道了，开始用" android:textAllCaps="false"
-            app:backgroundTint="@color/primary" app:cornerRadius="14dp" />
+            android:textSize="16sp" android:textStyle="bold"
+            app:backgroundTint="#FFE8A0F8" app:cornerRadius="16dp" />
     </LinearLayout>
 </FrameLayout>

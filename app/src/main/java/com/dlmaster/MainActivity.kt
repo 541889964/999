@@ -23,6 +23,10 @@ import com.dlmaster.util.PermissionHelper
 import com.dlmaster.util.Prefs
 import com.dlmaster.view.AuroraBackgroundView
 import com.dlmaster.view.ParticleView
+import com.dlmaster.service.IslandService
+import com.dlmaster.feature.Settings as FeatSettings
+import android.net.Uri
+import android.provider.Settings as SysSettings
 import com.dlmaster.view.SimpleNavBar
 import kotlin.random.Random
 class MainActivity : AppCompatActivity() {
@@ -80,6 +84,41 @@ class MainActivity : AppCompatActivity() {
                 .commitAllowingStateLoss()
         }
         if (!Prefs.noticeShown(this)) handler.postDelayed({ showNotice() }, 1000)
+
+        // 帧率
+        applyFrameRate()
+
+        // 灵动岛权限
+        requestOverlayIfNeeded()
+    }
+
+    private fun applyFrameRate() {
+        try {
+            val rate = try { FeatSettings.frameRate() } catch (_: Throwable) { 60 }
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                val lp = window.attributes
+                lp.preferredRefreshRate = rate.toFloat()
+                window.attributes = lp
+            }
+        } catch (_: Throwable) {}
+    }
+
+    private fun requestOverlayIfNeeded() {
+        try {
+            if (IslandService.canShow(this)) {
+                IslandService.start(this)
+            } else if (android.os.Build.VERSION.SDK_INT >= 23) {
+                val i = Intent(SysSettings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName"))
+                startActivityForResult(i, 9527)
+            }
+        } catch (_: Throwable) {}
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 9527) requestOverlayIfNeeded()
+    }
     }
     override fun onResume() {
         super.onResume(); paused = false; aurora.resume(); particles?.resume()
@@ -137,9 +176,9 @@ class MainActivity : AppCompatActivity() {
             dlg.show()
             try {
                 dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
-                dlg.window?.setWindowAnimations(R.style.DialogAnim)
+                dlg.window?.setWindowAnimations(0)
                 val dm = resources.displayMetrics
-                dlg.window?.setLayout((dm.widthPixels * 0.9).toInt(), (dm.heightPixels * 0.82).toInt())
+                dlg.window?.setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
             } catch (_: Throwable) {}
         } catch (_: Throwable) {}
     }
