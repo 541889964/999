@@ -155,7 +155,7 @@ class HomeFragment : Fragment() {
         v.findViewById<View>(R.id.btn_sniff_clear)?.setOnClickListener { live.clear(); rv.adapter?.notifyDataSetChanged() }
         v.findViewById<View>(R.id.btn_sniff_close)?.setOnClickListener { dlg.dismiss() }
         dlg.show()
-        try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent); dlg.window?.setAnimations(R.style.DialogAnim); val dm = resources.displayMetrics; dlg.window?.setLayout((dm.widthPixels * 0.95).toInt(), -2) } catch (_: Throwable) {}
+        try { dlg.window?.setBackgroundDrawableResource(android.R.color.transparent); dlg.window?.setWindowAnimations(R.style.DialogAnim); val dm = resources.displayMetrics; dlg.window?.setLayout((dm.widthPixels * 0.95).toInt(), -2) } catch (_: Throwable) {}
 
         // 启动端到端嗅探
         lifecycleScope.launch {
