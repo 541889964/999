@@ -1,6 +1,7 @@
 package com.dlmaster.download
 import org.json.JSONObject
 import java.util.UUID
+
 data class DownloadTask(
     var id: String = UUID.randomUUID().toString(),
     val url: String,
@@ -12,31 +13,40 @@ data class DownloadTask(
     var savedPath: String = "",
     var strategy: DownloadStrategy = DownloadStrategy.T8,
     var referer: String? = null,
-    var createdAt: Long = System.currentTimeMillis()
+    var createdAt: Long = System.currentTimeMillis(),
+    var finishedAt: Long = 0L,
+    var errorMsg: String = "",
+    var segmentsDone: Int = 0,
+    var segmentsTotal: Int = 0
 ) {
-    enum class Status { PENDING, RUNNING, DONE, FAILED }
-    val progressPercent: Int
-        get() = if (totalBytes > 0) ((downloadedBytes * 100) / totalBytes).toInt().coerceIn(0, 100) else 0
+    enum class Status { PENDING, RUNNING, PAUSED, DONE, FAILED }
+    val progressPercent: Int get() = if (totalBytes > 0) ((downloadedBytes * 100) / totalBytes).toInt().coerceIn(0, 100) else 0
     fun toJson(): JSONObject = JSONObject().apply {
-        put("id", id); put("url", url); put("fileName", fileName)
-        put("totalBytes", totalBytes); put("downloadedBytes", downloadedBytes)
-        put("speedBytesPerSec", speedBytesPerSec); put("status", status.name)
-        put("savedPath", savedPath); put("strategy", strategy.key)
-        put("referer", referer ?: ""); put("createdAt", createdAt)
+        put("id",id); put("url",url); put("fileName",fileName)
+        put("totalBytes",totalBytes); put("downloadedBytes",downloadedBytes)
+        put("speedBytesPerSec",speedBytesPerSec); put("status",status.name)
+        put("savedPath",savedPath); put("strategy",strategy.key)
+        put("referer",referer?:"")
+        put("createdAt",createdAt); put("finishedAt",finishedAt)
+        put("errorMsg",errorMsg); put("segmentsDone",segmentsDone); put("segmentsTotal",segmentsTotal)
     }
     companion object {
         fun fromJson(o: JSONObject) = DownloadTask(
-            id = o.optString("id").ifBlank { UUID.randomUUID().toString() },
-            url = o.optString("url"),
-            fileName = o.optString("fileName", "download.bin"),
-            totalBytes = o.optLong("totalBytes", 0L),
-            downloadedBytes = o.optLong("downloadedBytes", 0L),
-            speedBytesPerSec = o.optLong("speedBytesPerSec", 0L),
-            status = try { Status.valueOf(o.optString("status", "PENDING")) } catch (_: Throwable) { Status.FAILED },
-            savedPath = o.optString("savedPath", ""),
-            strategy = DownloadStrategy.byKey(o.optString("strategy", "t8")),
-            referer = o.optString("referer", "").ifBlank { null },
-            createdAt = o.optLong("createdAt", System.currentTimeMillis())
+            id=o.optString("id").ifBlank { UUID.randomUUID().toString() },
+            url=o.optString("url"),
+            fileName=o.optString("fileName","download.bin"),
+            totalBytes=o.optLong("totalBytes",0L),
+            downloadedBytes=o.optLong("downloadedBytes",0L),
+            speedBytesPerSec=o.optLong("speedBytesPerSec",0L),
+            status=try { Status.valueOf(o.optString("status","PENDING")) } catch (_:Throwable){ Status.FAILED },
+            savedPath=o.optString("savedPath",""),
+            strategy=DownloadStrategy.byKey(o.optString("strategy","t8")),
+            referer=o.optString("referer","").ifBlank { null },
+            createdAt=o.optLong("createdAt",System.currentTimeMillis()),
+            finishedAt=o.optLong("finishedAt",0L),
+            errorMsg=o.optString("errorMsg",""),
+            segmentsDone=o.optInt("segmentsDone",0),
+            segmentsTotal=o.optInt("segmentsTotal",0)
         )
     }
 }

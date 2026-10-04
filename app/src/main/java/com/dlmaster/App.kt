@@ -9,6 +9,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         Prefs.init(this)
+        com.dlmaster.feature.Settings.init(this)
         ImgLoader.init(this)
         MemoryManager.install(this)
         DownloadRepository.init(this)
