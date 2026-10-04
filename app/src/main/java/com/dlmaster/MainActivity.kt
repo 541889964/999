@@ -1,18 +1,30 @@
 package com.dlmaster
+
 import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings as SysSettings
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.dlmaster.feature.Settings as FeatSettings
+import com.dlmaster.service.IslandService
 import com.dlmaster.ui.browser.BrowserFragment
 import com.dlmaster.ui.download.DownloadFragment
 import com.dlmaster.ui.home.HomeFragment
@@ -23,46 +35,50 @@ import com.dlmaster.util.PermissionHelper
 import com.dlmaster.util.Prefs
 import com.dlmaster.view.AuroraBackgroundView
 import com.dlmaster.view.ParticleView
-import com.dlmaster.service.IslandService
-import com.dlmaster.feature.Settings as FeatSettings
-import android.net.Uri
-import android.provider.Settings as SysSettings
 import com.dlmaster.view.SimpleNavBar
 import kotlin.random.Random
+
 class MainActivity : AppCompatActivity() {
-    private lateinit var bg1: ImageView; private lateinit var bg2: ImageView
+
+    private lateinit var bg1: ImageView
+    private lateinit var bg2: ImageView
     private lateinit var aurora: AuroraBackgroundView
     private var particles: ParticleView? = null
+    private lateinit var nav: SimpleNavBar
+
     private val handler = Handler(Looper.getMainLooper())
-    private var currentIdx = -1; private var ids: IntArray = intArrayOf()
-    private var paused = false; private var useFirst = true; private var firstLoad = true
-    private val runnable = object : Runnable {
+    private var currentIdx = -1
+    private var ids: IntArray = intArrayOf()
+    private var paused = false
+    private var useFirst = true
+    private var firstLoad = true
+
+    private val bgRunnable = object : Runnable {
         override fun run() {
             if (paused) return
             switchBg()
             handler.postDelayed(this, Prefs.bgIntervalMs(this@MainActivity))
         }
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        // 请求最高刷新率(120Hz 屏自动启用,60Hz 设备无副作用)
-        try {
-            if (android.os.Build.VERSION.SDK_INT >= 30) {
-                val lp = window.attributes
-                lp.preferredDisplayModeId = 0
-                lp.preferredRefreshRate = 120f
-                window.attributes = lp
-            }
-        } catch (_: Throwable) {}
+
+        // 帧率
+        applyFrameRate()
+
         ids = BackgroundList.RES_IDS
-        bg1 = findViewById(R.id.iv_bg1); bg2 = findViewById(R.id.iv_bg2)
+        bg1 = findViewById(R.id.iv_bg1)
+        bg2 = findViewById(R.id.iv_bg2)
         aurora = findViewById(R.id.aurora)
         particles = findViewById(R.id.particles)
+        nav = findViewById(R.id.simple_nav)
+
         PermissionHelper.requestNotifications(this)
         if (Prefs.musicEnabled(this)) MusicPlayer.start(applicationContext)
-        val nav = findViewById<SimpleNavBar>(R.id.simple_nav)
+
         nav.onTabSelected = { idx ->
             val f: Fragment = when (idx) {
                 0 -> HomeFragment()
@@ -73,29 +89,32 @@ class MainActivity : AppCompatActivity() {
             try {
                 supportFragmentManager.beginTransaction()
                     .setCustomAnimations(
-                        R.anim.frag_in, R.anim.frag_out,
-                        R.anim.frag_in, R.anim.frag_out)
-                    .replace(R.id.fragment_container, f).commitAllowingStateLoss()
+                        R.anim.ios_in, R.anim.ios_out,
+                        R.anim.ios_in, R.anim.ios_out
+                    )
+                    .replace(R.id.fragment_container, f)
+                    .commitAllowingStateLoss()
             } catch (_: Throwable) {}
         }
+
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, HomeFragment())
                 .commitAllowingStateLoss()
         }
-        if (!Prefs.noticeShown(this)) handler.postDelayed({ showNotice() }, 1000)
 
-        // 帧率
-        applyFrameRate()
+        if (!Prefs.noticeShown(this)) {
+            handler.postDelayed({ showNotice() }, 1000)
+        }
 
-        // 灵动岛权限
+        // 灵动岛
         requestOverlayIfNeeded()
     }
 
     private fun applyFrameRate() {
         try {
             val rate = try { FeatSettings.frameRate() } catch (_: Throwable) { 60 }
-            if (android.os.Build.VERSION.SDK_INT >= 30) {
+            if (Build.VERSION.SDK_INT >= 30) {
                 val lp = window.attributes
                 lp.preferredRefreshRate = rate.toFloat()
                 window.attributes = lp
@@ -107,31 +126,48 @@ class MainActivity : AppCompatActivity() {
         try {
             if (IslandService.canShow(this)) {
                 IslandService.start(this)
-            } else if (android.os.Build.VERSION.SDK_INT >= 23) {
-                val i = Intent(SysSettings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName"))
+            } else if (Build.VERSION.SDK_INT >= 23) {
+                val i = Intent(
+                    SysSettings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
                 startActivityForResult(i, 9527)
             }
         } catch (_: Throwable) {}
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        @Suppress("DEPRECATION")
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 9527) requestOverlayIfNeeded()
     }
-    }
+
     override fun onResume() {
-        super.onResume(); paused = false; aurora.resume(); particles?.resume()
+        super.onResume()
+        paused = false
+        try { aurora.resume() } catch (_: Throwable) {}
+        try { particles?.resume() } catch (_: Throwable) {}
         if (Prefs.bgEnabled(this)) {
-            handler.removeCallbacks(runnable); switchBg()
-            handler.postDelayed(runnable, Prefs.bgIntervalMs(this))
-        } else { bg1.setImageDrawable(null); bg2.setImageDrawable(null) }
-        if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) MusicPlayer.start(applicationContext)
+            handler.removeCallbacks(bgRunnable)
+            switchBg()
+            handler.postDelayed(bgRunnable, Prefs.bgIntervalMs(this))
+        } else {
+            bg1.setImageDrawable(null)
+            bg2.setImageDrawable(null)
+        }
+        if (Prefs.musicEnabled(this) && !MusicPlayer.isPlaying()) {
+            MusicPlayer.start(applicationContext)
+        }
     }
+
     override fun onPause() {
-        super.onPause(); paused = true; aurora.pause(); particles?.pause()
-        handler.removeCallbacks(runnable)
+        super.onPause()
+        paused = true
+        try { aurora.pause() } catch (_: Throwable) {}
+        try { particles?.pause() } catch (_: Throwable) {}
+        handler.removeCallbacks(bgRunnable)
     }
+
     private fun switchBg() {
         if (ids.isEmpty() || !Prefs.bgEnabled(this)) return
         val next: Int = if (ids.size == 1) 0 else {
@@ -143,44 +179,84 @@ class MainActivity : AppCompatActivity() {
         val target = if (useFirst) bg1 else bg2
         val current = if (useFirst) bg2 else bg1
         try {
-            val fast = AnimationUtils.loadInterpolator(this, android.R.interpolator.fast_out_slow_in)
-            val linear = AnimationUtils.loadInterpolator(this, android.R.interpolator.linear_out_slow_in)
-            if (firstLoad) {
-                Glide.with(applicationContext).load(ids[next])
-                    .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL).into(target)
-                target.alpha = 1f; current.alpha = 0f; firstLoad = false
-            } else {
-                target.alpha = 0f
-                Glide.with(applicationContext).load(ids[next])
-                    .centerCrop().format(DecodeFormat.PREFER_RGB_565).override(900, 1600)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL).into(target)
-                target.animate().withLayer().alpha(1f).setDuration(700).setInterpolator(fast).start()
-                current.animate().withLayer().alpha(0f).setDuration(700).setInterpolator(linear).start()
-            }
+            target.alpha = 0f
+            Glide.with(applicationContext)
+                .load(ids[next])
+                .centerCrop()
+                .format(DecodeFormat.PREFER_RGB_565)
+                .override(900, 1600)
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .listener(object : RequestListener<android.graphics.drawable.Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?, model: Any?,
+                        t: Target<android.graphics.drawable.Drawable>?, isFirst: Boolean
+                    ): Boolean = false
+
+                    override fun onResourceReady(
+                        r: android.graphics.drawable.Drawable, model: Any?,
+                        t: Target<android.graphics.drawable.Drawable>?,
+                        s: DataSource?, isFirst: Boolean
+                    ): Boolean {
+                        if (firstLoad) {
+                            target.alpha = 1f
+                            current.alpha = 0f
+                            firstLoad = false
+                        } else {
+                            val fast = AnimationUtils.loadInterpolator(
+                                this@MainActivity,
+                                android.R.interpolator.fast_out_slow_in
+                            )
+                            val linear = AnimationUtils.loadInterpolator(
+                                this@MainActivity,
+                                android.R.interpolator.linear_out_slow_in
+                            )
+                            target.animate().alpha(1f).setDuration(500)
+                                .setInterpolator(fast).start()
+                            current.animate().alpha(0f).setDuration(500)
+                                .setInterpolator(linear).start()
+                        }
+                        return false
+                    }
+                })
+                .into(target)
             useFirst = !useFirst
         } catch (_: Throwable) {}
     }
+
     fun restartBgSchedule() {
-        handler.removeCallbacks(runnable); paused = false; switchBg()
-        handler.postDelayed(runnable, Prefs.bgIntervalMs(this))
+        handler.removeCallbacks(bgRunnable)
+        paused = false
+        switchBg()
+        handler.postDelayed(bgRunnable, Prefs.bgIntervalMs(this))
     }
+
     private fun showNotice() {
         try {
             val dlg = AlertDialog.Builder(this).create()
             val v = LayoutInflater.from(this).inflate(R.layout.dialog_notice, null)
-            dlg.setView(v); dlg.setCancelable(false)
+            dlg.setView(v)
+            dlg.setCancelable(false)
             v.findViewById<View>(R.id.btn_notice_ok).setOnClickListener {
-                Prefs.setNoticeShown(this, true); dlg.dismiss()
+                Prefs.setNoticeShown(this, true)
+                v.animate().alpha(0f).setDuration(200)
+                    .withEndAction { dlg.dismiss() }.start()
             }
             dlg.show()
             try {
                 dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
                 dlg.window?.setWindowAnimations(0)
-                val dm = resources.displayMetrics
-                dlg.window?.setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
+                dlg.window?.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
             } catch (_: Throwable) {}
+            v.alpha = 0f
+            v.animate().alpha(1f).setDuration(300).start()
         } catch (_: Throwable) {}
     }
-    override fun onDestroy() { super.onDestroy(); handler.removeCallbacks(runnable) }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(bgRunnable)
+    }
 }
